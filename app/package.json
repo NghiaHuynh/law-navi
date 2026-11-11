@@ -1,0 +1,10 @@
+{
+  "name": "law-navi-app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Ứng dụng local: thư viện bộ văn bản pháp luật, nhập thư mục, biên soạn, bản đồ trực quan và phân tích vấn đề.",
+  "scripts": {
+    "start": "node server.mjs"
+  }
+}

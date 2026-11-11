@@ -1,0 +1,92 @@
+{
+ "meta": {
+  "sub": "Bản đồ trích xuất tự động từ thư mục lawnavi-fixture-1794372457229 — bản nháp, cần rà lại",
+  "src": "Trích xuất tự động bằng regex từ các file chữ trong thư mục lawnavi-fixture-1794372457229 (ghi-chu.txt). Nhóm chủ đề và thứ tự đọc là suy luận máy — khi trích dẫn chính thức cần đối chiếu nguyên văn. File chưa đọc được: anh-hien-trang.png (file nhị nghĩa: cần đọc bằng mắt/agent để bổ sung)."
+ },
+ "groups": {
+  "luat": {
+   "c": "#1565c0",
+   "bg": "#e3f2fd",
+   "label": "Luật gốc"
+  },
+  "cu": {
+   "c": "#8d8471",
+   "bg": "#f4f1e9",
+   "label": "Hết hiệu lực"
+  },
+  "lq": {
+   "c": "#546e7a",
+   "bg": "#eceff1",
+   "label": "Văn bản liên quan"
+  },
+  "nd321": {
+   "c": "#2e7d32",
+   "bg": "#e8f5e9",
+   "label": "quy định chi tiết về quản lý chất lượng công trình; thay NĐ "
+  }
+ },
+ "docs": {
+  "nd321": {
+   "code": "NĐ 321/2026/NĐ-CP",
+   "type": "Nghị định",
+   "g": "nd321",
+   "sum": "Tóm tắt đã biên soạn lại trong app.",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/10/2026",
+   "issued": "15/9/2026",
+   "replaces": [
+    "nd06"
+   ],
+   "chapters": []
+  },
+  "nd06": {
+   "code": "NĐ 06/2021/NĐ-CP",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 321/2026/NĐ-CP.",
+   "kw": "",
+   "year": "2021",
+   "old": true,
+   "replacedBy": [
+    "nd321"
+   ]
+  },
+  "tt45": {
+   "code": "TT 45/2026/TT-BXD",
+   "type": "Thông tư",
+   "g": "nd321",
+   "sum": "hướng dẫn biểu mẫu nghiệm thu",
+   "kw": "",
+   "year": "2026"
+  },
+  "luat135": {
+   "code": "Luật Xây dựng 135/2025/QH15",
+   "type": "Luật",
+   "g": "luat",
+   "sum": "khung chung về hoạt động xây dựng.",
+   "kw": "",
+   "year": "2025"
+  },
+  "nd15": {
+   "code": "NĐ 15/2021/NĐ-CP",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — rà soát khi chuyển tiếp, kiểm tra tình trạng hiệu lực trước khi trích dẫn.",
+   "kw": "",
+   "year": "2021",
+   "old": true
+  }
+ },
+ "pairs": [
+  {
+   "old": "nd06",
+   "nw": "nd321",
+   "note": ""
+  }
+ ],
+ "tasks": [],
+ "timeline": [],
+ "readingPath": [],
+ "quote": ""
+}

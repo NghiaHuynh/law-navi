@@ -1,0 +1,434 @@
+{
+ "meta": {
+  "sub": "Bản đồ trích xuất tự động từ thư mục law-navi — bản nháp, cần rà lại",
+  "src": "Trích xuất tự động bằng regex từ các file chữ trong thư mục law-navi (readme.txt). Nhóm chủ đề và thứ tự đọc là suy luận máy — khi trích dẫn chính thức cần đối chiếu nguyên văn. File chưa đọc được: 887052563_1755065646619061_4695280205432095695_n.jpg (file nhị nghĩa: cần đọc bằng mắt/agent để bổ sung); 887902401_1755065596619066_457045181231576011_n.jpg (file nhị nghĩa: cần đọc bằng mắt/agent để bổ sung)."
+ },
+ "groups": {
+  "luat": {
+   "c": "#1565c0",
+   "bg": "#e3f2fd",
+   "label": "Luật gốc"
+  },
+  "cu": {
+   "c": "#8d8471",
+   "bg": "#f4f1e9",
+   "label": "Hết hiệu lực"
+  },
+  "lq": {
+   "c": "#546e7a",
+   "bg": "#eceff1",
+   "label": "Văn bản liên quan"
+  },
+  "nd217": {
+   "c": "#2e7d32",
+   "bg": "#e8f5e9",
+   "label": "Quản lý hoạt động xây dựng"
+  },
+  "nd207": {
+   "c": "#e65100",
+   "bg": "#fff3e0",
+   "label": "Quản lý chất lượng, thi công, bảo trì"
+  },
+  "nd206": {
+   "c": "#6a1b9a",
+   "bg": "#f3e5f5",
+   "label": "Quản lý chi phí đầu tư xây dựng"
+  },
+  "nd210": {
+   "c": "#00695c",
+   "bg": "#e0f2f1",
+   "label": "Hợp đồng xây dựng"
+  },
+  "nd212": {
+   "c": "#a17c07",
+   "bg": "#fff9c4",
+   "label": "Điều kiện năng lực, hệ thống thông tin và cơ sở dữ liệu quốc"
+  },
+  "nd209": {
+   "c": "#c62828",
+   "bg": "#ffebee",
+   "label": "Quản lý vật liệu xây dựng"
+  },
+  "xuphat": {
+   "c": "#c62828",
+   "bg": "#ffebee",
+   "label": "Xử phạt vi phạm"
+  }
+ },
+ "docs": {
+  "luat135": {
+   "code": "Luật Xây dựng 135/2025/QH15",
+   "type": "Luật",
+   "g": "luat",
+   "sum": ", Quốc hội thông qua ngày 10/12/2025, hiệu lực từ 01/7/2026 (một số điều có hiệu lực sớm từ 01/01/2026, theo Điều 94). Luật gồm 8 chương, 95 điều, thay Luật 50/2014.",
+   "kw": "",
+   "year": "2025",
+   "eff": "01/7/2026",
+   "issued": "10/12/2025",
+   "replaces": [
+    "luat50"
+   ]
+  },
+  "luat50": {
+   "code": "Luật 50/2014",
+   "type": "Luật",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi Luật Xây dựng 135/2025/QH15.",
+   "kw": "",
+   "year": "2014",
+   "old": true,
+   "replacedBy": [
+    "luat135"
+   ]
+  },
+  "nd217": {
+   "code": "NĐ 217/2026",
+   "type": "Nghị định",
+   "g": "nd217",
+   "sum": "Quản lý hoạt động xây dựng (dự án, khảo sát, thiết kế, giấy phép), thay NĐ 175/2024",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd175"
+   ],
+   "issued": "25/9/2026"
+  },
+  "nd175": {
+   "code": "NĐ 175/2024",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 217/2026.",
+   "kw": "",
+   "year": "2024",
+   "old": true,
+   "replacedBy": [
+    "nd217"
+   ]
+  },
+  "nd207": {
+   "code": "NĐ 207/2026",
+   "type": "Nghị định",
+   "g": "nd207",
+   "sum": "Quản lý chất lượng, thi công, bảo trì, thay NĐ 06/2021",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd06"
+   ]
+  },
+  "nd06": {
+   "code": "NĐ 06/2021",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 207/2026.",
+   "kw": "",
+   "year": "2021",
+   "old": true,
+   "replacedBy": [
+    "nd207"
+   ],
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd10"
+   ]
+  },
+  "nd206": {
+   "code": "NĐ 206/2026",
+   "type": "Nghị định",
+   "g": "nd206",
+   "sum": "Quản lý chi phí đầu tư xây dựng, thay NĐ 10/2021",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd10"
+   ]
+  },
+  "nd10": {
+   "code": "NĐ 10/2021",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 206/2026.",
+   "kw": "",
+   "year": "2021",
+   "old": true,
+   "replacedBy": [
+    "nd206",
+    "nd06"
+   ]
+  },
+  "nd210": {
+   "code": "NĐ 210/2026",
+   "type": "Nghị định",
+   "g": "nd210",
+   "sum": "Hợp đồng xây dựng, thay NĐ 37/2015 và NĐ 50/2021",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd37",
+    "nd50"
+   ]
+  },
+  "nd37": {
+   "code": "NĐ 37/2015",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 210/2026.",
+   "kw": "",
+   "year": "2015",
+   "old": true,
+   "replacedBy": [
+    "nd210"
+   ]
+  },
+  "nd50": {
+   "code": "NĐ 50/2021",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 210/2026.",
+   "kw": "",
+   "year": "2021",
+   "old": true,
+   "replacedBy": [
+    "nd210"
+   ]
+  },
+  "nd212": {
+   "code": "NĐ 212/2026",
+   "type": "Nghị định",
+   "g": "nd212",
+   "sum": "Điều kiện năng lực, hệ thống thông tin và cơ sở dữ liệu quốc gia, thay NĐ 111/2024",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd111"
+   ]
+  },
+  "nd111": {
+   "code": "NĐ 111/2024",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 212/2026.",
+   "kw": "",
+   "year": "2024",
+   "old": true,
+   "replacedBy": [
+    "nd212"
+   ]
+  },
+  "nd209": {
+   "code": "NĐ 209/2026",
+   "type": "Nghị định",
+   "g": "nd209",
+   "sum": "Quản lý vật liệu xây dựng, thay NĐ 09/2021",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/7/2026",
+   "replaces": [
+    "nd09"
+   ]
+  },
+  "nd09": {
+   "code": "NĐ 09/2021",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 209/2026.",
+   "kw": "",
+   "year": "2021",
+   "old": true,
+   "replacedBy": [
+    "nd209"
+   ]
+  },
+  "tt32": {
+   "code": "TT 32/2026/TT-BXD",
+   "type": "Thông tư",
+   "g": "nd207",
+   "sum": "chi tiết hóa, có kế hoạch tổ chức thí nghiệm",
+   "kw": "",
+   "year": "2026"
+  },
+  "tt36": {
+   "code": "TT 36",
+   "type": "Thông tư",
+   "g": "nd206",
+   "sum": "",
+   "kw": ""
+  },
+  "qd1041": {
+   "code": "QĐ 1041/QĐ-BXD",
+   "type": "Quyết định",
+   "g": "nd206",
+   "sum": "",
+   "kw": ""
+  },
+  "tt37": {
+   "code": "TT 37/2026",
+   "type": "Thông tư",
+   "g": "nd206",
+   "sum": "",
+   "kw": "",
+   "year": "2026"
+  },
+  "tt38": {
+   "code": "TT 38/2026",
+   "type": "Thông tư",
+   "g": "nd206",
+   "sum": "",
+   "kw": "",
+   "year": "2026"
+  },
+  "tt40": {
+   "code": "TT 40/2026",
+   "type": "Thông tư",
+   "g": "nd206",
+   "sum": "",
+   "kw": "",
+   "year": "2026"
+  },
+  "qd1040": {
+   "code": "QĐ 1040/QĐ-BXD",
+   "type": "Quyết định",
+   "g": "nd210",
+   "sum": "mẫu hợp đồng",
+   "kw": ""
+  },
+  "tt39": {
+   "code": "TT 39/2026",
+   "type": "Thông tư",
+   "g": "nd212",
+   "sum": "hệ thống thông tin, CSDL quốc gia",
+   "kw": "",
+   "year": "2026"
+  },
+  "tt41": {
+   "code": "TT 41/2026",
+   "type": "Thông tư",
+   "g": "nd209",
+   "sum": "chất lượng sản phẩm vật liệu",
+   "kw": "",
+   "year": "2026"
+  },
+  "vbhn91": {
+   "code": "VBHN 91/2026",
+   "type": "Văn bản hợp nhất",
+   "g": "nd217",
+   "sum": "25/9/2026",
+   "kw": "",
+   "year": "2026"
+  },
+  "nd347": {
+   "code": "NĐ 347/2026",
+   "type": "Nghị định",
+   "g": "nd217",
+   "sum": "",
+   "kw": "",
+   "year": "2026"
+  },
+  "nd339": {
+   "code": "NĐ 339/2026",
+   "type": "Nghị định",
+   "g": "xuphat",
+   "sum": "(hiệu lực 26/8/2026) thay NĐ 16/2022 về xử phạt vi phạm hành chính trong xây dựng.",
+   "kw": "",
+   "year": "2026",
+   "eff": "26/8/2026",
+   "replaces": [
+    "nd16"
+   ]
+  },
+  "nd16": {
+   "code": "NĐ 16/2022",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 339/2026.",
+   "kw": "",
+   "year": "2022",
+   "old": true,
+   "replacedBy": [
+    "nd339"
+   ]
+  }
+ },
+ "pairs": [
+  {
+   "old": "luat50",
+   "nw": "luat135",
+   "note": ""
+  },
+  {
+   "old": "nd175",
+   "nw": "nd217",
+   "note": ""
+  },
+  {
+   "old": "nd06",
+   "nw": "nd207",
+   "note": ""
+  },
+  {
+   "old": "nd10",
+   "nw": "nd206",
+   "note": ""
+  },
+  {
+   "old": "nd37",
+   "nw": "nd210",
+   "note": ""
+  },
+  {
+   "old": "nd50",
+   "nw": "nd210",
+   "note": ""
+  },
+  {
+   "old": "nd111",
+   "nw": "nd212",
+   "note": ""
+  },
+  {
+   "old": "nd09",
+   "nw": "nd209",
+   "note": ""
+  },
+  {
+   "old": "nd10",
+   "nw": "nd06",
+   "note": ""
+  },
+  {
+   "old": "nd16",
+   "nw": "nd339",
+   "note": ""
+  }
+ ],
+ "tasks": [],
+ "timeline": [],
+ "readingPath": [
+  {
+   "doc": "luat135",
+   "why": "lướt mục lục 8 chương để nắm khung"
+  },
+  {
+   "doc": "nd207",
+   "why": "đọc kỹ, đây là văn bản dùng hằng ngày"
+  },
+  {
+   "doc": "tt32",
+   "why": "biểu mẫu, kế hoạch thí nghiệm"
+  },
+  {
+   "doc": "vbhn91",
+   "why": "tra thiết kế, dự án, giấy phép (đã gồm phần NĐ 347 sửa)"
+  },
+  {
+   "doc": "nd339",
+   "why": "biết mức phạt khi làm sai"
+  }
+ ],
+ "quote": ""
+}

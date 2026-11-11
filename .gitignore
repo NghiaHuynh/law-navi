@@ -1,0 +1,22 @@
+# Dữ liệu lớn / thô - không đưa vào git
+sources/
+shots/
+*.md
+
+# Hình ảnh / media
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.svg
+
+# Hệ thống / IDE
+.DS_Store
+.idea/
+.vscode/
+.nodeterm/
+node_modules/
+*.log
+.env
+.env.local

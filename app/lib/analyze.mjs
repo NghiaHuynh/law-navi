@@ -1,0 +1,98 @@
+// Mirror of the ask-view scoring in law-map engine.html — keep the two in sync.
+const MARKS = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
+export function norm(s) {
+  return String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(MARKS, '')
+    .replace(/đ/g, 'd').replace(/[^a-z0-9\s]/g, ' ');
+}
+const STOP = new Set(('va cua thi la bi duoc cho voi khi nao gi khong co phai lam the toi minh can muon nen ma van dang da se de tren trong tai ve ra sao nhu the bao nhieu phan tram hoac cung den tu o dau bat dau giup xem biet lien quan he thong van ban phap luat').split(' '));
+export function concepts(q) {
+  const seen = {}, out = [];
+  norm(q).split(/\s+/).forEach(w => {
+    if (w.length < 4 || STOP.has(w) || seen[w]) return;
+    seen[w] = 1; out.push(w);
+  });
+  return out;
+}
+function docHay(DATA, id) {
+  const d = DATA.docs[id];
+  return norm([d.code, d.sum, (d.bullets || []).join(' '), (d.kw || ''), (d.chips || []).join(' '), ((DATA.groups[d.g] || {}).label || '')].join(' '));
+}
+function wset(s) { const o = {}; norm(s).split(/\s+/).forEach(w => { if (w) o[w] = 1; }); return o; }
+export function analyze(DATA, q, lex) {
+  const D = id => DATA.docs[id];
+  let cs = concepts(q);
+  const says = [];
+  const nq = norm(q);
+  const drop = {};
+  (lex || []).forEach(e => {
+    if (!new RegExp(e.p).test(nq)) return;
+    says.push(e.say);
+    (e.add || []).forEach(w => { if (cs.indexOf(w) < 0) cs.push(w); });
+    (e.drop || []).forEach(w => { drop[w] = 1; });
+  });
+  cs = cs.filter(w => !drop[w]);
+  if (!cs.length) return null;
+  const hay = {};
+  Object.keys(DATA.docs).forEach(id => { hay[id] = wset(docHay(DATA, id)); });
+  const df = {};
+  cs.forEach(w => { df[w] = 0; Object.keys(hay).forEach(id => { if (hay[id][w]) df[w]++; }); });
+  const total = Object.keys(hay).length;
+  function wOf(w) {
+    const d = df[w];
+    if (!d) return 0;
+    if (d <= 2) return 2.2;
+    if (d <= 5) return 1.6;
+    if (d <= Math.max(6, Math.round(total * 0.18))) return 1;
+    return 0.4;
+  }
+  const ds = {};
+  Object.keys(hay).forEach(id => {
+    let s = 0; const cov = []; const kww = wset(D(id).kw || '');
+    cs.forEach(w => {
+      if (hay[id][w]) {
+        const ww = wOf(w);
+        s += ww * (kww[w] ? 1.4 : 1);
+        cov.push(w);
+      }
+    });
+    ds[id] = { s, cov };
+  });
+  const covered = {};
+  Object.keys(ds).forEach(id => ds[id].cov.forEach(w => { covered[w] = 1; }));
+  const miss = cs.filter(w => !covered[w]);
+  let pct = Math.round((cs.length - miss.length) / cs.length * 100);
+  const tScore = (DATA.tasks || []).map(t => {
+    const th = wset(t.label + ' ' + t.hint + ' ' + t.docs.map(p => p[1]).join(' '));
+    let s = 0;
+    cs.forEach(w => { if (th[w]) s += wOf(w) * 1.2; });
+    t.docs.forEach(p => { if (ds[p[0]]) s += ds[p[0]].s * 0.5; });
+    return { t, s };
+  }).sort((a, b) => b.s - a.s);
+  const top = tScore.length && tScore[0].s > 0 ? tScore[0].t : null;
+  let plan = top ? top.docs.filter(p => D(p[0])) :
+    Object.keys(ds).filter(id => ds[id].s > 0 && !D(id).old)
+      .sort((a, b) => ds[b].s - ds[a].s).slice(0, 4)
+      .map(id => [id, 'Khớp khái niệm trong mô tả vấn đề của bạn']);
+  let note = '', curated = false;
+  (DATA.problems || []).forEach(p => {
+    const pc = concepts(p.q);
+    if (!pc.length) return;
+    const hit = pc.filter(w => cs.indexOf(w) >= 0).length;
+    if (hit >= 2 && hit / Math.min(pc.length, cs.length) >= 0.5) {
+      const pl = (p.plan || []).filter(x => D(x[0]));
+      if (pl.length) { plan = pl; curated = true; pct = Math.max(pct, Math.min(100, p.cover || pct)); }
+      if (p.note) note = p.note;
+    }
+  });
+  const inPlan = {}; plan.forEach(p => { inPlan[p[0]] = 1; });
+  let best = 0;
+  plan.forEach(p => { if (ds[p[0]] && ds[p[0]].s > best) best = ds[p[0]].s; });
+  const planCov = {};
+  plan.forEach(p => { if (ds[p[0]]) ds[p[0]].cov.forEach(w => { if (wOf(w) >= 1) planCov[w] = 1; }); });
+  const rel = Object.keys(ds).filter(id => {
+    if (!(ds[id].s > 0) || inPlan[id] || D(id).old || ds[id].s < Math.max(1.5, best * 0.45)) return false;
+    return ds[id].cov.some(w => planCov[w]);
+  }).sort((a, b) => ds[b].s - ds[a].s).slice(0, 4);
+  const tier = pct >= 100 ? 'Bám sát trọn vẹn' : pct >= 70 ? 'Bám sát' : pct >= 40 ? 'Định hướng phần lớn' : pct > 0 ? 'Gợi điểm khởi đầu' : 'Chưa khớp';
+  return { pct, tier, covN: cs.length - miss.length, csN: cs.length, plan, rel, miss: miss.slice(0, 4), note, curated, best, says };
+}

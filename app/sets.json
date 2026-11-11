@@ -1,0 +1,22 @@
+[
+ {
+  "id": "xay-dung-2026",
+  "name": "Xây dựng 2026",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-10T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/data/xay-dung-2026.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi"
+ },
+ {
+  "id": "thue-2026",
+  "name": "Thuế 2026",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-10T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-thue/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-thue/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-thue"
+ }
+]

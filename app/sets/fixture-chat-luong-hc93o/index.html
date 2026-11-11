@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bản đồ văn bản xây dựng từ 01/7/2026</title>
+</head>
+<body>
+<!--FRAGMENT-START-->
+<section class="wrap" id="ln">
+  <header class="ln-top">
+    <div class="ln-brand">
+      <h1 id="ln-h1">Bản đồ văn bản pháp luật</h1>
+      <p id="ln-sub"></p>
+    </div>
+    <div class="ln-searchbox">
+      <input id="ln-q" type="search" placeholder="Tìm số văn bản, từ khóa, việc cần làm…  ( / )" autocomplete="off" aria-label="Tìm kiếm văn bản">
+      <div id="ln-qres" class="ln-qres" hidden></div>
+    </div>
+    <nav class="ln-tabs" id="ln-tabs" aria-label="Chế độ xem"></nav>
+  </header>
+  <main id="ln-main"></main>
+  <footer class="ln-foot">
+    <p id="ln-src"></p>
+    <p id="ln-sources" class="ln-sources"></p>
+  </footer>
+  <aside class="ln-drawer" id="ln-drawer" hidden aria-label="Chi tiết văn bản">
+    <button class="ln-x" id="ln-x" aria-label="Đóng khung chi tiết">&times;</button>
+    <div id="ln-dbody"></div>
+  </aside>
+</section>
+<style>
+#ln{--paper:#f6f4ee;--ink:#263238;--muted:#6b7a80;--line:#d8d2c4;
+  font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);background:var(--paper);display:block;min-height:100vh;padding-bottom:48px}
+#ln *,#ln *::before,#ln *::after{box-sizing:border-box}
+#ln button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+#ln .ln-top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:2px solid var(--line);
+  padding:12px 22px 0;display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center}
+#ln .ln-brand h1{margin:0;font-size:19px;letter-spacing:.4px;text-transform:uppercase;color:#1b5e20}
+#ln .ln-brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+#ln .ln-searchbox{position:relative;flex:1 1 240px;max-width:420px}
+#ln #ln-q{width:100%;padding:8px 12px;border:2px solid #b9b2a2;border-radius:999px;background:#fff;font:inherit;font-size:14px}
+#ln #ln-q:focus{outline:none;border-color:#1b5e20}
+#ln .ln-qres{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:2px solid #b9b2a2;
+  border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.14);overflow:hidden;max-height:320px;overflow-y:auto;z-index:40}
+#ln .ln-qres button{display:block;width:100%;text-align:left;padding:8px 12px;border-bottom:1px solid #eee}
+#ln .ln-qres button:last-child{border-bottom:0}
+#ln .ln-qres button:hover{background:#f1efe7}
+#ln .ln-qres b{display:block;font-size:13.5px}
+#ln .ln-qres span{font-size:12px;color:var(--muted)}
+#ln .ln-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+#ln .ln-tabs button{padding:8px 14px;border-radius:10px 10px 0 0;font-weight:600;font-size:13.5px;color:var(--muted);
+  border:2px solid transparent;border-bottom:0}
+#ln .ln-tabs button[aria-selected="true"]{color:#1b5e20;background:#fff;border-color:var(--line)}
+#ln main{padding:22px 22px 0;max-width:1500px;margin:0 auto}
+#ln .ln-h{display:flex;align-items:center;gap:10px;margin:26px 0 12px;font-size:15px;letter-spacing:.6px;
+  text-transform:uppercase;color:#bf5b16}
+#ln .ln-h::after{content:"";flex:1;border-top:2px dashed #c9b79a}
+#ln .ln-h.red{color:#b3403f}
+#ln .ln-h.red::after{border-top-color:#d8a3a2}
+#ln .ln-h.green{color:#2e7d32}
+#ln .ln-h.green::after{border-top-color:#a8c8a8}
+#ln .ln-lead{margin:4px 0 14px;font-size:14px;color:var(--muted)}
+#ln .chip{display:inline-block;padding:2px 9px;border:1.5px solid #9aa4a8;border-radius:999px;background:#fff;
+  font-size:11.5px;color:#455a64;white-space:nowrap}
+#ln .chip.hl{background:#fff3bf;border-color:#e0c341;color:#7a5c00;font-weight:600}
+#ln .chip.thay{background:#fff;border-color:#b3403f;color:#b3403f;font-weight:700;letter-spacing:.5px}
+#ln .chip.old{background:#efece4;border-color:#a49c8a;color:#6d6553;text-decoration:line-through}
+#ln .card{background:#fff;border:2px solid var(--c,#90a4ae);border-radius:12px;padding:14px 16px;
+  box-shadow:3px 4px 0 rgba(0,0,0,.06)}
+#ln .card.tint{background:var(--cbg,#fff)}
+#ln .law h2{margin:0 0 8px;font-size:20px;color:#1565c0;letter-spacing:.3px}
+#ln .law .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+#ln .chaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+#ln .chap{background:#fff;border:1.5px solid #90a4ae;border-radius:9px;padding:8px 10px;text-align:left;width:100%}
+#ln .chap:hover{border-color:#1565c0;box-shadow:2px 2px 0 rgba(21,101,192,.25)}
+#ln .chap b{display:block;font-size:13px;color:#1565c0}
+#ln .chap span{display:block;font-size:12px;color:var(--ink);margin:2px 0 4px}
+#ln .chap .chip{font-size:10.5px;padding:1px 7px;background:#fdeccc;border-color:#e0a96d;color:#8a4b00}
+#ln .grid6{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+#ln .grp header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+#ln .grp h4{margin:0;font-size:17px;color:var(--c)}
+#ln .grp .gsubj{font-size:12.5px;color:var(--muted)}
+#ln .grp .gmeta{font-size:12px;color:var(--muted);margin:2px 0 6px}
+#ln .grp .thay{display:flex;align-items:center;gap:6px;font-size:12.5px;margin:4px 0 6px;flex-wrap:wrap}
+#ln .gbul{margin:4px 0 8px;padding-left:18px;font-size:13px}
+#ln .gbul li{margin:2px 0}
+#ln .gbul li mark{background:#fff3bf;padding:0 2px}
+#ln .kids{display:grid;gap:6px}
+#ln .kid{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--c);border-radius:9px;
+  padding:7px 10px}
+#ln .kid:hover{box-shadow:2px 2px 0 rgba(0,0,0,.15)}
+#ln .kid b{font-size:13px;color:var(--c)}
+#ln .kid i{font-style:normal;font-size:11px;color:var(--muted);margin-left:6px}
+#ln .kid span{display:block;font-size:12px;color:var(--ink)}
+#ln .kid mark{background:#fff3bf;padding:0 2px}
+#ln .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+#ln .rel{cursor:pointer;text-align:left;width:100%}
+#ln .rel:hover{box-shadow:3px 4px 0 rgba(0,0,0,.18)}
+#ln .rel header{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+#ln .rel b{font-size:14.5px;color:var(--c)}
+#ln .rel p{margin:6px 0 0;font-size:12.5px}
+#ln .rel p mark{background:#fff3bf;padding:0 2px}
+#ln .lookup{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fff;border:2px dashed #c9b79a;
+  border-radius:12px;padding:12px 14px;margin-bottom:16px}
+#ln .lookup label{font-size:13.5px;font-weight:600}
+#ln .lookup select{font:inherit;font-size:14px;padding:7px 10px;border:2px solid #b9b2a2;border-radius:9px;background:#fff}
+#ln .pairs{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+#ln .pair{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;background:#fff;
+  border:2px solid var(--line);border-radius:12px;padding:12px}
+#ln .pair .pold,#ln .pair .pnew{border-radius:9px;padding:8px 10px;border:1.5px solid #a49c8a;background:#f4f1e9}
+#ln .pair .pnew{border-color:var(--c);background:var(--cbg);cursor:pointer;text-align:left;width:100%}
+#ln .pair .pnew:hover{box-shadow:2px 2px 0 rgba(0,0,0,.15)}
+#ln .pair b{display:block;font-size:13.5px}
+#ln .pair .pold b{color:#6d6553;text-decoration:line-through}
+#ln .pair .pnew b{color:var(--c)}
+#ln .pair span{display:block;font-size:11.5px;color:var(--muted)}
+#ln .pair .parrow{font-size:20px;font-weight:700;color:#b3403f}
+#ln .pair .pnote{grid-column:1/-1;margin:2px 0 0;font-size:11.5px;color:var(--muted)}
+#ln .tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+#ln .tbtn{background:#fff;border:2px solid #b9b2a2;border-radius:11px;padding:10px 12px;text-align:left;
+  font-size:13.5px;font-weight:600}
+#ln .tbtn:hover{border-color:#1b5e20}
+#ln .tbtn[aria-pressed="true"]{border-color:#1b5e20;background:#eaf3ea;box-shadow:2px 3px 0 rgba(27,94,32,.25)}
+#ln .tbtn span{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px}
+#ln .tres{margin-top:16px;display:grid;gap:8px}
+#ln .trow{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;background:#fff;
+  border:2px solid var(--c,#90a4ae);border-left-width:8px;border-radius:11px;padding:10px 14px}
+#ln .trow .n{width:28px;height:28px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-size:14px}
+#ln .trow b{font-size:14.5px;color:var(--c)}
+#ln .trow p{margin:2px 0 0;font-size:12.5px;color:var(--ink)}
+#ln .trow .open{border:1.5px solid var(--c);color:var(--c);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
+#ln .trow .open:hover{background:var(--cbg)}
+#ln .twhy{background:#fff3bf;border:1.5px solid #e0c341;border-radius:11px;padding:10px 14px;font-size:13px;margin-bottom:4px}
+#ln .tl{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 14px}
+#ln .tlstep{flex:0 0 230px;background:var(--cbg,#fff);border:2px solid var(--c,#90a4ae);border-radius:11px;
+  padding:10px 12px;position:relative}
+#ln .tlstep b{display:block;font-size:14px;color:var(--c)}
+#ln .tlstep span{display:block;font-size:12.5px;margin-top:3px}
+#ln .tlstep:not(:last-child)::after{content:"→";position:absolute;right:-16px;top:42%;font-size:18px;font-weight:700;color:#8a8371}
+#ln .rp{display:grid;gap:10px;max-width:900px}
+#ln .rpstep{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center;background:var(--cbg,#fff);
+  border:2px solid var(--c,#90a4ae);border-radius:12px;padding:12px 16px;cursor:pointer;text-align:left;width:100%}
+#ln .rpstep:hover{box-shadow:3px 4px 0 rgba(0,0,0,.15)}
+#ln .rpstep .n{width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+#ln .rpstep b{font-size:15.5px;color:var(--c)}
+#ln .rpstep span{display:block;font-size:13px;margin-top:2px}
+#ln .quote{margin:22px auto 0;max-width:760px;text-align:center;font-size:16px;font-style:italic;color:#1b5e20;
+  border-top:2px dashed #a8c8a8;padding-top:16px}
+#ln .ln-foot{max-width:1500px;margin:30px auto 0;padding:0 22px;font-size:11.5px;color:var(--muted)}
+#ln .ln-sources{margin-top:6px}#ln .ln-sources a{color:#1565c0;text-decoration:none}#ln .ln-sources a:hover{text-decoration:underline}
+#ln .ln-drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);background:#fff;z-index:50;
+  border-left:3px solid #1b5e20;box-shadow:-12px 0 30px rgba(0,0,0,.2);overflow-y:auto;padding:18px 20px 40px}
+#ln .ln-x{position:sticky;top:0;float:right;margin-left:8px;width:32px;height:32px;border-radius:50%;
+  background:#f1efe7;font-size:18px;line-height:1;border:1.5px solid #b9b2a2}
+#ln .ln-x:hover{background:#e4e0d4}
+#ln .d-code{font-size:20px;font-weight:700;color:var(--c,#263238);margin:4px 0 2px;padding-right:36px}
+#ln .d-type{font-size:12px;color:var(--muted);margin-bottom:10px}
+#ln .d-sec{margin:14px 0 0;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#8a8371}
+#ln .d-body{font-size:13.5px;margin:6px 0 0}
+#ln .d-body ul{margin:6px 0;padding-left:18px}
+#ln .d-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+#ln .d-links button{border:1.5px solid var(--c,#607d8b);color:var(--c,#455a64);border-radius:999px;
+  padding:3px 11px;font-size:12px;font-weight:600;background:var(--cbg,#fff)}
+#ln .d-links button:hover{box-shadow:1px 2px 0 rgba(0,0,0,.2)}
+#ln .d-links button.oldlink{text-decoration:line-through;color:#6d6553;border-color:#a49c8a;background:#f4f1e9}
+#ln .askbox{background:#fff;border:2px solid #1b5e20;border-radius:14px;padding:16px;box-shadow:3px 4px 0 rgba(0,0,0,.06)}
+#ln .askbox textarea{width:100%;min-height:84px;border:2px solid #b9b2a2;border-radius:10px;padding:10px 12px;
+  font:inherit;font-size:14.5px;resize:vertical;background:#fffdf8}
+#ln .askbox textarea:focus{outline:none;border-color:#1b5e20}
+#ln .askbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+#ln .askgo{background:#1b5e20;color:#fff;font-weight:700;padding:9px 20px;border-radius:999px}
+#ln .askgo:hover{background:#14471a}
+#ln .asksample{border:1.5px dashed #9aa4a8;border-radius:999px;padding:4px 12px;font-size:12.5px;color:#455a64}
+#ln .asksample:hover{background:#f1efe7}
+#ln .score{display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin:18px 0 4px}
+#ln .pct{font-size:46px;font-weight:800;color:#1b5e20;line-height:1}
+#ln .pct small{font-size:16px;font-weight:700;color:var(--muted)}
+#ln .scoretxt{max-width:680px;font-size:14px;color:var(--muted)}
+#ln .miss{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:#8a4b00}
+#ln .askwarn{margin-top:16px;font-size:12.5px;color:var(--muted);border-top:2px dashed #c9b79a;padding-top:10px}
+@media (max-width:860px){
+  #ln .ln-top{padding:10px 12px 0}
+  #ln main{padding:16px 12px 0}
+  #ln .ln-tabs{margin-left:0}
+  #ln .pair{grid-template-columns:1fr}
+  #ln .pair .parrow{transform:rotate(90deg);justify-self:center}
+}
+</style>
+<script>
+(function(){
+"use strict";
+/* Thêm lĩnh vực pháp lý khác: thay khối DATA bên dưới theo đúng schema (groups/docs/tasks/timeline/readingPath). */
+var DATA={
+ "meta": {
+  "sub": "Bản đồ trích xuất tự động từ thư mục lawnavi-fixture-1794373212283 — bản nháp, cần rà lại",
+  "src": "Trích xuất tự động bằng regex từ các file chữ trong thư mục lawnavi-fixture-1794373212283 (ghi-chu.txt). Nhóm chủ đề và thứ tự đọc là suy luận máy — khi trích dẫn chính thức cần đối chiếu nguyên văn. File chưa đọc được: anh-hien-trang.png (file nhị nghĩa: cần đọc bằng mắt/agent để bổ sung)."
+ },
+ "groups": {
+  "luat": {
+   "c": "#1565c0",
+   "bg": "#e3f2fd",
+   "label": "Luật gốc"
+  },
+  "cu": {
+   "c": "#8d8471",
+   "bg": "#f4f1e9",
+   "label": "Hết hiệu lực"
+  },
+  "lq": {
+   "c": "#546e7a",
+   "bg": "#eceff1",
+   "label": "Văn bản liên quan"
+  },
+  "nd321": {
+   "c": "#2e7d32",
+   "bg": "#e8f5e9",
+   "label": "quy định chi tiết về quản lý chất lượng công trình; thay NĐ "
+  }
+ },
+ "docs": {
+  "nd321": {
+   "code": "NĐ 321/2026/NĐ-CP",
+   "type": "Nghị định",
+   "g": "nd321",
+   "sum": "Tóm tắt đã biên soạn lại trong app.",
+   "kw": "",
+   "year": "2026",
+   "eff": "01/10/2026",
+   "issued": "15/9/2026",
+   "replaces": [
+    "nd06"
+   ],
+   "chapters": []
+  },
+  "nd06": {
+   "code": "NĐ 06/2021/NĐ-CP",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — hết hiệu lực, thay bởi NĐ 321/2026/NĐ-CP.",
+   "kw": "",
+   "year": "2021",
+   "old": true,
+   "replacedBy": [
+    "nd321"
+   ]
+  },
+  "tt45": {
+   "code": "TT 45/2026/TT-BXD",
+   "type": "Thông tư",
+   "g": "nd321",
+   "sum": "hướng dẫn biểu mẫu nghiệm thu",
+   "kw": "",
+   "year": "2026"
+  },
+  "luat135": {
+   "code": "Luật Xây dựng 135/2025/QH15",
+   "type": "Luật",
+   "g": "luat",
+   "sum": "khung chung về hoạt động xây dựng.",
+   "kw": "",
+   "year": "2025"
+  },
+  "nd15": {
+   "code": "NĐ 15/2021/NĐ-CP",
+   "type": "Nghị định",
+   "g": "cu",
+   "sum": "Văn bản cũ — rà soát khi chuyển tiếp, kiểm tra tình trạng hiệu lực trước khi trích dẫn.",
+   "kw": "",
+   "year": "2021",
+   "old": true
+  }
+ },
+ "pairs": [
+  {
+   "old": "nd06",
+   "nw": "nd321",
+   "note": ""
+  }
+ ],
+ "tasks": [],
+ "timeline": [],
+ "readingPath": [],
+ "quote": ""
+};
+var LEX=[{"p":"hoa don.*(sai|sua|nham|tinh lai|huy|doi|tra lai)|(sai|sua|nham|tinh lai).*hoa don","add":["thue","suat","huy","lap","lai","xu","ly"],"drop":["tinh"],"say":"hóa đơn sai sót — hủy, thay thế, lập lại"},{"p":"dang ky hoa don|mua hoa don|phat hanh hoa don|hoa don dien tu|tai khoan thue","add":["dang","ky","phat","hanh","dien","tu"],"say":"đăng ký, phát hành hóa đơn điện tử"},{"p":"(xay|lam|hoan thanh).*(xong|hoan thanh)|kiem tra.*(truoc khi|ban giao|dua vao|su dung)|ban giao.*(cong trinh|nha|du an)","add":["nghiem","thu","chat","luong","cong","trinh","thi","cong"],"drop":["xong","truoc"],"say":"nghiệm thu, hồ sơ chất lượng công trình"},{"p":"khong.*(giay phep|phep)|giay phep|phep xay|xin phep","add":["giay","phep","thiet","ke","du","an","tham","tra"],"say":"giấy phép xây dựng, hồ sơ dự án, thiết kế"},{"p":"bi phat|phat tien|muc phat|lam sai|vi pham|bi xu ly","add":["xu","phat","hanh","chinh","muc","vi","pham"],"say":"xử phạt vi phạm hành chính"},{"p":"(ho so|bieu mau|quy trinh|hop dong).*(cu|dan chieu|06 2021|10 2021)|(van ban|nghi dinh).*(cu|het hieu luc|con dung|dang dung)","add":["thay","the","cu","ra","soat","chuyen","tiep"],"say":"rà soát văn bản cũ, điều khoản chuyển tiếp"},{"p":"nuoi con|con nho|bo me|ong ba|nguoi nha|khong di lam|that nghiep|nguoi phu thuoc|con cai","add":["nguoi","phu","thuoc","giam","tru","gia","canh"],"drop":["nuoi"],"say":"người phụ thuộc, giảm trừ gia cảnh"},{"p":"cuoi nam|het nam|quyet toan|nop thue|hoan thue|tra lai thue|dong thue","add":["quyet","toan","khau","tru","hoan","nop"],"say":"quyết toán, khấu trừ, hoàn thuế"},{"p":"ho kinh doanh|ban hang online|kinh doanh nho|mo cua hang|ban hang|cho thue nha","add":["ho","kinh","doanh","ke","khai","khoan"],"say":"hộ kinh doanh, kê khai thuế"},{"p":"chi phi|hoa don dau vao|giai trinh|loai chi|cong ty|doanh nghiep","add":["chi","phi","duoc","tru","giai","trinh","tndn"],"say":"chi phí được trừ khi tính thuế TNDN"},{"p":"hop dong|ky ket|thau|gia cong trinh|du toan|tam ung|thanh toan","add":["hop","dong","du","toan","chi","phi","dau","tu","thanh","toan"],"say":"hợp đồng xây dựng, dự toán, thanh toán"},{"p":"vat lieu|xi mang|sat thep|gach|chat luong san pham","add":["vat","lieu","chat","luong","san","pham"],"say":"quản lý chất lượng vật liệu xây dựng"},{"p":"thiet ke|ban ve|tham tra|phe duyet|du an dau tu","add":["thiet","ke","tham","tra","phe","duyet","du","an"],"say":"thiết kế, thẩm tra, phê duyệt dự án"},{"p":"bao tri|sua chua|hu hong|kiem dinh|het han su dung","add":["bao","tri","kiem","dinh","hu","hong"],"say":"bảo trì, kiểm định công trình"},{"p":"nghi viec|nghi lam|thoi viec|duoi viec|nhan vien moi|tuyen dung","add":["nghi","viec","tncn","khau","tru","quyet","toan"],"say":"thuế TNCN khi nghỉ việc, quyết toán"},{"p":"giay to|thu tuc|ho so|bieu mau|nop cho|xin xac nhan","add":["ho","so","bieu","mau","thu","tuc"],"say":"hồ sơ, biểu mẫu, thủ tục"}].concat(DATA.lexicon||[]);
+var SOURCES=[{"id":"vbpl","name":"CSDL quốc gia về văn bản pháp luật","url":"https://vbpl.vn","owner":"Bộ Tư pháp","role":"Toàn văn PDF bản gốc/Công báo, văn bản hợp nhất, lược đồ hiệu lực","best":"Mọi loại văn bản; bản hợp nhất; kiểm tra hiệu lực"},{"id":"phapluat","name":"Cổng Pháp luật quốc gia","url":"https://phapluat.gov.vn","owner":"Bộ Tư pháp","role":"Văn bản mới ban hành, dự thảo lấy ý kiến","best":"Cập nhật văn bản mới; dự thảo"},{"id":"quochoi","name":"Cổng TTĐT Quốc hội","url":"https://quochoi.vn","owner":"Văn phòng Quốc hội","role":"Luật, nghị quyết vừa thông qua kèm hồ sơ dự án","best":"Luật / nghị quyết Quốc hội"},{"id":"congbao","name":"Công báo / Cổng Chính phủ","url":"https://congbao.chinhphu.vn","owner":"Văn phòng Chính phủ","role":"Văn bản giá trị pháp lý chính thức: nghị định, quyết định","best":"NĐ / QĐ Chính phủ, Thủ tướng"},{"id":"phapdien","name":"Bộ Pháp điển điện tử","url":"https://phapdien.moj.gov.vn","owner":"Bộ Tư pháp","role":"Hệ thống hóa quy định còn hiệu lực theo đề mục","best":"Tra theo chuyên ngành; rà soát hiệu lực"}];
+var VIEWS=[["map","Bản đồ"],["ask","Vấn đề của bạn"],["old","Cũ → Mới"],["task","Theo việc"],["time","Thời gian"],["path","Lộ trình"]].filter(function(v){
+  if(v[0]==="old")return DATA.pairs.length||Object.keys(DATA.docs).some(function(k){return DATA.docs[k].old;});
+  if(v[0]==="task")return (DATA.tasks||[]).length;
+  if(v[0]==="time")return (DATA.timeline||[]).length;
+  if(v[0]==="path")return (DATA.readingPath||[]).length;
+  return true;});
+var root=document.getElementById("ln");
+var main=document.getElementById("ln-main");
+var tabsEl=document.getElementById("ln-tabs");
+var drawer=document.getElementById("ln-drawer");
+var dbody=document.getElementById("ln-dbody");
+var q=document.getElementById("ln-q");
+var qres=document.getElementById("ln-qres");
+var state={view:"map",task:null,askq:""};
+var urlQ=new URLSearchParams(location.search).get("q");
+if(urlQ){state.view="ask";state.askq=urlQ;}
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch];});}
+function D(id){return DATA.docs[id];}
+function G(id){var d=D(id);return (d&&DATA.groups[d.g])||DATA.groups.lq||{c:"#546e7a",bg:"#eceff1"};}
+function st(id){var g=G(id);return "--c:"+g.c+";--cbg:"+g.bg;}
+function gst(g){var x=DATA.groups[g]||DATA.groups.lq||{c:"#546e7a",bg:"#eceff1"};return "--c:"+x.c+";--cbg:"+x.bg;}
+function code(id){return esc(D(id)?D(id).code:id);}
+
+document.getElementById("ln-sub").textContent=DATA.meta.sub;
+document.getElementById("ln-src").textContent=DATA.meta.src;
+document.getElementById("ln-sources").innerHTML='<b>Nguồn chính thống:</b> '+SOURCES.map(function(s){return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener" title="'+esc(s.owner)+' — '+esc(s.role)+'">'+esc(s.name)+"</a>";}).join(" · ");
+document.getElementById("ln-h1").textContent=DATA.meta.title||"Bản đồ văn bản pháp luật";
+
+tabsEl.innerHTML=VIEWS.map(function(v){
+  return '<button role="tab" data-view="'+v[0]+'" aria-selected="'+(v[0]===state.view)+'">'+v[1]+"</button>";
+}).join("");
+tabsEl.addEventListener("click",function(e){
+  var b=e.target.closest("button[data-view]");
+  if(!b)return;
+  state.view=b.dataset.view;
+  tabsEl.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-selected",x===b);});
+  render();
+});
+
+function chipRow(list){return '<div class="chips">'+list.map(function(c){
+  return '<span class="chip'+(/Hiệu lực/.test(c)?" hl":"")+'">'+esc(c)+"</span>";}).join("")+"</div>";}
+
+function kidHtml(id){var d=D(id);
+  return '<button class="kid" data-doc="'+id+'" style="'+st(id)+'"><b>'+code(id)+"</b><i>"+esc(d.issued||"")+"</i><span>"+
+    (d.hl?"<mark>":"")+esc(d.sum)+(d.hl?"</mark>":"")+"</span></button>";}
+
+function grpCard(id){var d=D(id);
+  var kids=Object.keys(DATA.docs).filter(function(k){var x=D(k);return x.g===d.g&&k!==id&&!x.old&&x.type!=="Luật";});
+  var thay=(d.replaces||[]).map(function(r){return '<span class="chip thay">THAY</span> <span class="chip old">'+code(r)+"</span>";}).join(" ");
+  return '<article class="card tint grp" style="'+st(id)+'">'+
+    "<header><h4>"+code(id)+'</h4><span class="gsubj">'+esc(G(id).label)+"</span></header>"+
+    '<div class="gmeta">'+esc(d.issued||"")+(d.eff?" · hiệu lực "+esc(d.eff):"")+"</div>"+
+    (thay?'<div class="thay">'+thay+"</div>":"")+
+    (d.bullets?'<ul class="gbul">'+d.bullets.map(function(b){return "<li>"+esc(b)+"</li>";}).join("")+"</ul>":"")+
+    (kids.length?'<div class="kids">'+kids.map(kidHtml).join("")+"</div>":"")+
+    "</article>";}
+
+function relCard(id){var d=D(id);
+  return '<button class="card rel" data-doc="'+id+'" style="'+st(id)+'">'+
+    "<header><b>"+code(id)+'</b><span class="chip">'+esc(d.eff||d.issued)+"</span></header>"+
+    "<p>"+esc(d.sum)+"</p></button>";}
+
+function viewMap(){
+  var ids=Object.keys(DATA.docs);
+  var gids=Object.keys(DATA.groups).filter(function(g){return g!=="cu"&&g!=="lq"&&g!=="xuphat";});
+  var clusters=gids.map(function(g){
+    var mem=ids.filter(function(k){var d=D(k);return d.g===g&&!d.old;});
+    if(!mem.length)return null;
+    var head=mem.filter(function(k){return D(k).type==="Luật";})[0]||mem[0];
+    return {g:g,head:head,kids:mem.filter(function(k){return k!==head;})};
+  }).filter(Boolean);
+  var rel=ids.filter(function(k){var d=D(k);return !d.old&&(d.g==="lq"||d.g==="xuphat");});
+  var lawLed=clusters.filter(function(c){return D(c.head).type==="Luật";});
+  var decreeLed=clusters.filter(function(c){return D(c.head).type!=="Luật";});
+  var h="";
+  lawLed.forEach(function(c){
+    var d=D(c.head);
+    var chips=(d.chips||[]).concat(d.issued?["Ban hành "+d.issued]:[],d.eff?["Hiệu lực "+d.eff]:[]);
+    h+='<section class="card tint law" style="'+st(c.head)+'"><h2>'+code(c.head)+"</h2>"+
+      '<p class="gsubj">'+esc(DATA.groups[c.g].label)+"</p>"+
+      (chips.length?chipRow(chips):"")+
+      (d.chapters?'<div class="chaps">'+d.chapters.map(function(ch){
+        return '<button class="chap" data-doc="'+c.head+'"><b>'+esc(ch.t)+"</b><span>"+esc(ch.d)+"</span>"+
+          (ch.nd?'<span class="chip">'+esc(ch.nd)+"</span>":"")+"</button>";}).join("")+"</div>":"")+
+      (d.sum?'<p class="ln-lead">'+esc(d.sum)+"</p>":"")+
+      (c.kids.length?'<div class="kids">'+c.kids.map(kidHtml).join("")+"</div>":"")+
+      "</section>";
+  });
+  if(decreeLed.length){
+    var effs=decreeLed.map(function(c){return D(c.head).eff;});
+    var common=effs.length&&effs.every(function(e){return e&&e===effs[0];})?effs[0]:"";
+    h+='<h3 class="ln-h">'+(lawLed.length?"Nghị định hướng dẫn":"Các nhóm văn bản")+' <span class="chip">'+
+      (common?"đều hiệu lực "+esc(common):"bấm thẻ để xem chi tiết")+"</span></h3>"+
+      '<div class="grid6">'+decreeLed.map(function(c){return grpCard(c.head);}).join("")+"</div>";
+  }
+  if(rel.length)h+='<h3 class="ln-h red">Văn bản liên quan</h3><div class="grid4">'+rel.map(relCard).join("")+"</div>";
+  return h||'<p class="ln-lead">Không có dữ liệu văn bản nào.</p>';}
+
+function pairHtml(p,big){var o=D(p.old),n=D(p.nw);
+  return '<div class="pair" style="'+st(p.nw)+'">'+
+    '<div class="pold"><b>'+code(p.old)+"</b><span>"+esc(o.sum)+"</span></div>"+
+    '<div class="parrow">→</div>'+
+    '<button class="pnew" data-doc="'+p.nw+'"><b>'+code(p.nw)+"</b><span>"+esc(n.sum)+"</span></button>"+
+    (p.note?'<p class="pnote">'+esc(p.note)+"</p>":"")+
+    "</div>";}
+
+function viewOld(){
+  var ps=DATA.pairs.filter(function(p){return D(p.old)&&D(p.nw);});
+  var opts=ps.map(function(p){return '<option value="'+p.old+'">'+code(p.old)+" — "+esc(D(p.old).sum)+"</option>";}).join("");
+  return '<p class="ln-lead">Hồ sơ, biểu mẫu, quy trình còn dẫn chiếu văn bản cũ thì rà theo cặp thay thế. Chọn văn bản cũ trong hồ sơ của bạn:</p>'+
+    '<div class="lookup"><label for="ln-oldsel">Đang dẫn chiếu:</label><select id="ln-oldsel"><option value="">— chọn văn bản cũ —</option>'+opts+"</select></div>"+
+    '<div id="ln-oldres"></div>'+
+    '<h3 class="ln-h red">Toàn bộ cặp thay thế</h3>'+
+    '<div class="pairs">'+ps.map(function(p){return pairHtml(p);}).join("")+"</div>";}
+
+function viewTask(){
+  return '<p class="ln-lead">Chọn việc bạn đang làm — hệ thống chỉ ra văn bản cần mở, theo thứ tự ưu tiên.</p>'+
+    '<div class="tgrid">'+DATA.tasks.map(function(t){
+      return '<button class="tbtn" data-task="'+t.id+'" aria-pressed="'+(state.task===t.id)+'">'+esc(t.label)+"<span>"+esc(t.hint)+"</span></button>";}).join("")+"</div>"+
+    '<div class="tres" id="ln-tres"></div>';}
+
+function taskResult(id){
+  var t=DATA.tasks.filter(function(x){return x.id===id;})[0];
+  if(!t)return "";
+  return '<div class="twhy">Việc: <b>'+esc(t.label)+"</b> — mở theo thứ tự sau:</div>"+
+    t.docs.filter(function(p){return D(p[0]);}).map(function(pair,i){
+      return '<div class="trow" style="'+st(pair[0])+'"><div class="n">'+(i+1)+"</div>"+
+        '<div><b>'+code(pair[0])+"</b><p>"+esc(pair[1])+"</p></div>"+
+        '<button class="open" data-doc="'+pair[0]+'">chi tiết</button></div>';}).join("");}
+
+function viewTime(){
+  return '<p class="ln-lead">Mốc thời gian chuyển hệ: từ ngày thông qua đến bản hợp nhất cuối cùng.</p>'+
+    '<div class="tl">'+DATA.timeline.filter(function(s){return DATA.groups[s.g];}).map(function(s){
+      return '<div class="tlstep" style="'+gst(s.g)+'"><b>'+esc(s.d)+"</b><span>"+esc(s.t)+"</span></div>";}).join("")+"</div>";}
+
+function viewPath(){
+  return '<p class="ln-lead">Thứ tự nên đọc từ khung chung tới từng sắc thuế (góc nhìn người biên soạn). Bấm từng bước để mở chi tiết.</p>'+
+    '<div class="rp">'+DATA.readingPath.filter(function(s){return D(s.doc);}).map(function(s,i){var d=D(s.doc);
+      return '<button class="rpstep" data-doc="'+s.doc+'" style="'+st(s.doc)+'"><div class="n">'+(i+1)+"</div>"+
+        '<div><b>'+code(s.doc)+"</b><span>"+esc(s.why)+"</span></div></button>";}).join("")+"</div>"+
+    '<p class="quote">'+esc(DATA.quote)+"</p>";}
+
+function norm(s){return String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+  .replace(/đ/g,"d").replace(/[^a-z0-9\s]/g," ");}
+var STOP={};("va cua thi la bi duoc cho voi khi nao gi khong co phai lam the toi minh can muon nen ma van dang da se de tren trong tai ve ra sao nhu the bao nhieu phan tram hoac cung den tu o dau bat dau giup xem biet lien quan he thong van ban phap luat").split(" ").forEach(function(w){STOP[w]=1;});
+function concepts(q){
+  var seen={},out=[];
+  norm(q).split(/\s+/).forEach(function(w){
+    if(w.length<4||STOP[w]||seen[w])return;
+    seen[w]=1;out.push(w);
+  });
+  return out;
+}
+function docHay(id){var d=D(id);
+  return norm([d.code,d.sum,(d.bullets||[]).join(" "),(d.kw||""),(d.chips||[]).join(" "),((DATA.groups[d.g]||{}).label||"")].join(" "));}
+function wset(s){var o={};norm(s).split(/\s+/).forEach(function(w){if(w)o[w]=1;});return o;}
+
+function analyze(q){
+  var cs=concepts(q);
+  var says=[],nq=norm(q),drop={};
+  LEX.forEach(function(e){
+    if(!new RegExp(e.p).test(nq))return;
+    says.push(e.say);
+    (e.add||[]).forEach(function(w){if(cs.indexOf(w)<0)cs.push(w);});
+    (e.drop||[]).forEach(function(w){drop[w]=1;});
+  });
+  cs=cs.filter(function(w){return !drop[w];});
+  if(!cs.length)return null;
+  var orig={};
+  String(q).split(/[\s,.;:!?()\/\-–—]+/).forEach(function(tok){
+    var n=norm(tok).trim();
+    if(n&&!orig[n])orig[n]=tok.toLowerCase();
+  });
+  var hay={};
+  Object.keys(DATA.docs).forEach(function(id){hay[id]=wset(docHay(id));});
+  var df={};
+  cs.forEach(function(w){
+    df[w]=0;
+    Object.keys(hay).forEach(function(id){if(hay[id][w])df[w]++;});
+  });
+  var total=Object.keys(hay).length;
+  function wOf(w){var d=df[w];
+    if(!d)return 0;
+    if(d<=2)return 2.2;
+    if(d<=5)return 1.6;
+    if(d<=Math.max(6,Math.round(total*0.18)))return 1;
+    return 0.4;}
+  var ds={};
+  Object.keys(hay).forEach(function(id){
+    var s=0,cov=[],kww=wset(D(id).kw||"");
+    cs.forEach(function(w){
+      if(hay[id][w]){
+        var ww=wOf(w);
+        s+=ww*(kww[w]?1.4:1);
+        cov.push(w);
+      }
+    });
+    ds[id]={s:s,cov:cov};
+  });
+  var covered={};
+  Object.keys(ds).forEach(function(id){ds[id].cov.forEach(function(w){covered[w]=1;});});
+  var miss=cs.filter(function(w){return !covered[w];});
+  var pct=Math.round((cs.length-miss.length)/cs.length*100);
+  var tScore=(DATA.tasks||[]).map(function(t){
+    var th=wset(t.label+" "+t.hint+" "+t.docs.map(function(p){return p[1];}).join(" "));
+    var s=0;
+    cs.forEach(function(w){if(th[w])s+=wOf(w)*1.2;});
+    t.docs.forEach(function(p){if(ds[p[0]])s+=ds[p[0]].s*0.5;});
+    return {t:t,s:s};
+  }).sort(function(a,b){return b.s-a.s;});
+  var top=tScore.length&&tScore[0].s>0?tScore[0].t:null;
+  var plan=top?top.docs.filter(function(p){return D(p[0]);}):
+    Object.keys(ds).filter(function(id){return ds[id].s>0&&!D(id).old;})
+      .sort(function(a,b){return ds[b].s-ds[a].s;}).slice(0,4)
+      .map(function(id){return [id,"Khớp khái niệm trong mô tả vấn đề của bạn"];});
+  var note="",curated=false;
+  (DATA.problems||[]).forEach(function(p){
+    var pc=concepts(p.q);
+    if(!pc.length)return;
+    var hit=pc.filter(function(w){return cs.indexOf(w)>=0;}).length;
+    if(hit>=2&&hit/Math.min(pc.length,cs.length)>=0.5){
+      var pl=(p.plan||[]).filter(function(x){return D(x[0]);});
+      if(pl.length){plan=pl;curated=true;pct=Math.max(pct,Math.min(100,p.cover||pct));}
+      if(p.note)note=p.note;
+    }
+  });
+  var inPlan={};plan.forEach(function(p){inPlan[p[0]]=1;});
+  var best=0;
+  plan.forEach(function(p){if(ds[p[0]]&&ds[p[0]].s>best)best=ds[p[0]].s;});
+  var planCov={};plan.forEach(function(p){if(ds[p[0]])ds[p[0]].cov.forEach(function(w){if(wOf(w)>=1)planCov[w]=1;});});
+  var rel=Object.keys(ds).filter(function(id){
+      if(!(ds[id].s>0)||inPlan[id]||D(id).old||ds[id].s<Math.max(1.5,best*0.45))return false;
+      return ds[id].cov.some(function(w){return planCov[w];});
+    }).sort(function(a,b){return ds[b].s-ds[a].s;}).slice(0,4);
+  var tier=pct>=100?"Bám sát trọn vẹn: bộ văn bản phủ đủ mọi khía cạnh nêu trong mô tả.":
+    pct>=70?"Bám sát: bộ văn bản này dẫn được gần trọn vấn đề của bạn.":
+    pct>=40?"Định hướng phần lớn: còn khía cạnh nằm ngoài bộ văn bản hiện có.":
+    pct>0?"Chỉ gợi điểm khởi đầu: câu mô tả còn chung chung — thêm chi tiết đời thường (việc gì, giấy tờ gì, ai liên quan, lúc nào) để hệ thống dịch sát hơn.":
+    "Chưa khớp: bộ văn bản chưa có nội dung cho mô tả này.";
+  return {pct:pct,tier:tier,covN:cs.length-miss.length,csN:cs.length,
+    plan:plan,rel:rel,miss:miss.slice(0,4),note:note,curated:curated,orig:orig,says:says};
+}
+
+function askHtml(r){
+  var h='<div class="score"><div class="pct">'+r.pct+'<small>%</small></div><div class="scoretxt"><b>'+esc(r.tier)+"</b>"+
+    (r.curated?' <span class="chip hl">kịch bản đã kiểm duyệt</span>':"")+"<br>"+
+    r.covN+"/"+r.csN+" khía cạnh trong mô tả khớp bộ văn bản · kế hoạch mở "+r.plan.length+" văn bản theo thứ tự ưu tiên"+
+    (r.pct<100?" · "+(100-r.pct)+"% còn lại nằm ngoài phạm vi phủ.":" · không còn khía cạnh nào ngoài phạm vi phủ.")+"</div></div>";
+  if(r.says&&r.says.length)h+='<p class="ln-lead"><b>Hệ thống hiểu câu của bạn là:</b></p><div class="chips">'+
+    r.says.map(function(s){return '<span class="chip hl">'+esc(s)+"</span>";}).join("")+"</div>";
+  h+='<h3 class="ln-h green">Bắt đầu từ đây</h3><div class="rp">'+r.plan.map(function(p,i){
+    return '<button class="rpstep" data-doc="'+p[0]+'" style="'+st(p[0])+'"><div class="n">'+(i+1)+"</div>"+
+      "<div><b>"+code(p[0])+"</b><span>"+esc(p[1])+"</span></div></button>";}).join("")+"</div>";
+  if(r.rel.length)h+='<h3 class="ln-h">Liên quan — mở khi vướng</h3><div class="grid4">'+r.rel.map(relCard).join("")+"</div>";
+  if(r.miss.length)h+='<h3 class="ln-h red">Khía cạnh chưa phủ ('+(100-r.pct)+'%)</h3><ul class="miss">'+
+    r.miss.map(function(w){return "<li>“"+esc((r.orig&&r.orig[w])||w)+"”</li>";}).join("")+"</ul>"+
+    '<p class="ln-lead">Phần này cần nguồn khác: văn bản chuyên ngành ngoài bộ hiện có, hợp đồng và hồ sơ nội bộ, hoặc ý kiến chuyên gia.</p>';
+  if(r.note)h+='<p class="ln-lead"><b>Ghi chú biên soạn:</b> '+esc(r.note)+"</p>";
+  h+='<p class="askwarn">Phần trăm đo mức phủ tài liệu của bộ văn bản này đối với mô tả của bạn — không phải cam kết kết quả pháp lý. Trước khi áp dụng luôn đối chiếu nguyên văn và kiểm tra hiệu lực tại thời điểm dùng.</p>';
+  return h;
+}
+
+function runAsk(){
+  var ta=document.getElementById("ln-askq");
+  var box=document.getElementById("ln-askres");
+  state.askq=ta.value;
+  var r=analyze(ta.value);
+  box.innerHTML=r?askHtml(r):'<p class="ln-lead">Cứ kể như nhắn cho đồng nghiệp, không cần từ chuyên ngành — ví dụ “xây xong nhà không biết ai kiểm tra trước khi ở”, “hóa đơn tính sai tiền khách bắt sửa”. Hệ thống tự dịch sang ngôn ngữ văn bản; hoặc bấm một câu mẫu phía trên.</p>';
+}
+
+function viewAsk(){
+  return '<p class="ln-lead">Kể vấn đề bằng lời thường, như nhắn cho đồng nghiệp — không cần từ chuyên ngành. Hệ thống tự dịch sang khái niệm văn bản, chỉ điểm bắt đầu, chuỗi văn bản liên quan và ước lượng phần trăm vấn đề có thể dẫn dắt được.</p>'+
+    '<div class="askbox"><textarea id="ln-askq" placeholder="Ví dụ: hóa đơn điện tử lập sai thuế suất, khách yêu cầu hủy và lập lại thì bắt đầu từ đâu?"></textarea>'+
+    '<div class="askbar"><button class="askgo" id="ln-askgo">Phân tích vấn đề</button>'+
+    ((DATA.problems||[]).length?'<span class="chip">thử nhanh:</span>'+DATA.problems.map(function(p,i){
+      return '<button class="asksample" data-aski="'+i+'">'+esc(p.q.length>56?p.q.slice(0,56)+"…":p.q)+"</button>";}).join(""):"")+
+    "</div></div>"+
+    '<div id="ln-askres"></div>';
+}
+
+function render(){
+  qres.hidden=true;
+  main.innerHTML={map:viewMap,ask:viewAsk,old:viewOld,task:viewTask,time:viewTime,path:viewPath}[state.view]();
+  if(state.view==="ask"){
+    document.getElementById("ln-askgo").addEventListener("click",runAsk);
+    document.getElementById("ln-askq").addEventListener("keydown",function(e){
+      if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))runAsk();});
+    if(state.askq){document.getElementById("ln-askq").value=state.askq;runAsk();}
+  }
+  if(state.view==="old"){
+    document.getElementById("ln-oldsel").addEventListener("change",function(){
+      var box=document.getElementById("ln-oldres");
+      if(!this.value){box.innerHTML="";return;}
+      var p=DATA.pairs.filter(function(x){return x.old===this.value&&D(x.old)&&D(x.nw);},this)[0];
+      box.innerHTML='<h3 class="ln-h green">Mở bản mới thay thế</h3><div class="pairs">'+pairHtml(p)+"</div>";
+    });
+  }
+  if(state.view==="task"&&state.task){
+    document.getElementById("ln-tres").innerHTML=taskResult(state.task);
+  }
+}
+
+function openDoc(id){
+  var d=D(id);if(!d)return;
+  var g=G(id);
+  var h='<div class="d-code" style="'+st(id)+'">'+code(id)+"</div>"+
+    '<div class="d-type">'+esc(d.type)+" · nhóm: "+esc(g.label||"—")+(d.old?" · <b>hết hiệu lực</b>":"")+"</div>";
+  if(d.url)h+='<p class="d-sec">Nguồn chính thống</p><div class="d-links"><a class="chip" href="'+esc(d.url)+'" target="_blank" rel="noopener">Toàn văn / bản gốc ↗</a></div>';
+  h+='<p class="d-sec">Nội dung</p><p class="d-body">'+esc(d.sum)+"</p>";
+  if(d.bullets)h+='<ul class="d-body">'+d.bullets.map(function(b){return "<li>"+esc(b)+"</li>";}).join("")+"</ul>";
+  if(d.chips)h+='<p class="d-sec">Mốc</p><div class="d-links">'+d.chips.map(function(c){return '<span class="chip">'+esc(c)+"</span>";}).join("")+"</div>";
+  if(d.issued)h+='<p class="d-sec">Ban hành</p><p class="d-body">'+esc(d.issued)+"</p>";
+  if(d.eff)h+='<p class="d-sec">Hiệu lực</p><p class="d-body">'+esc(d.eff)+"</p>";
+  if(d.replaces&&d.replaces.length){
+    h+='<p class="d-sec">Thay thế</p><div class="d-links">'+d.replaces.filter(function(r){return D(r);}).map(function(r){
+      return '<button class="oldlink" data-doc="'+r+'">'+code(r)+"</button>";}).join("")+"</div>";}
+  if(d.replacedBy&&d.replacedBy.length){
+    h+='<p class="d-sec">Được thay bởi</p><div class="d-links">'+d.replacedBy.filter(function(r){return D(r);}).map(function(r){
+      return '<button data-doc="'+r+'" style="'+st(r)+'">'+code(r)+"</button>";}).join("")+"</div>";}
+  var kids=Object.keys(DATA.docs).filter(function(k){var x=D(k);return x.g===d.g&&k!==id&&!x.old&&x.type!=="Luật"&&d.type==="Nghị định";});
+  if(kids.length)h+='<p class="d-sec">Văn bản đi kèm</p><div class="d-links">'+kids.map(function(k){
+    return '<button data-doc="'+k+'" style="'+st(k)+'">'+code(k)+"</button>";}).join("")+"</div>";
+  var inTasks=DATA.tasks.filter(function(t){return t.docs.some(function(p){return p[0]===id;});});
+  if(inTasks.length)h+='<p class="d-sec">Dùng cho việc</p><div class="d-links">'+inTasks.map(function(t){
+    return '<button data-gotask="'+t.id+'">'+esc(t.label)+"</button>";}).join("")+"</div>";
+  var rp=DATA.readingPath.findIndex(function(s){return s.doc===id;});
+  if(rp>=0)h+='<p class="d-sec">Lộ trình đọc</p><p class="d-body">Bước '+(rp+1)+" / 5 — "+esc(DATA.readingPath[rp].why)+"</p>";
+  dbody.innerHTML=h;
+  drawer.hidden=false;
+}
+function closeDrawer(){drawer.hidden=true;}
+document.getElementById("ln-x").addEventListener("click",closeDrawer);
+
+root.addEventListener("click",function(e){
+  var doc=e.target.closest("[data-doc]");
+  if(doc){openDoc(doc.dataset.doc);return;}
+  var t=e.target.closest("[data-task]");
+  if(t){state.task=t.dataset.task;
+    main.querySelectorAll(".tbtn").forEach(function(b){b.setAttribute("aria-pressed",b===t);});
+    document.getElementById("ln-tres").innerHTML=taskResult(state.task);
+    return;}
+  var gt=e.target.closest("[data-gotask]");
+  if(gt){state.view="task";state.task=gt.dataset.gotask;
+    tabsEl.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-selected",x.dataset.view==="task");});
+    render();closeDrawer();return;}
+  var ai=e.target.closest("[data-aski]");
+  if(ai){var p=(DATA.problems||[])[+ai.dataset.aski];
+    if(p){state.askq=p.q;render();}
+    return;}
+  if(!e.target.closest(".ln-drawer")&&!e.target.closest(".ln-searchbox"))closeDrawer();
+});
+
+function searchList(term){
+  term=term.trim().toLowerCase();
+  if(term.length<2)return [];
+  return Object.keys(DATA.docs).filter(function(id){var d=D(id);
+    return (d.code+" "+d.sum+" "+(d.kw||"")).toLowerCase().indexOf(term)>=0;
+  }).slice(0,9);
+}
+q.addEventListener("input",function(){
+  var list=searchList(q.value);
+  if(!list.length){qres.hidden=true;return;}
+  qres.hidden=false;
+  qres.innerHTML=list.map(function(id){var d=D(id);
+    return '<button data-doc="'+id+'"><b>'+code(id)+(d.old?" (hết hiệu lực)":"")+"</b><span>"+esc(d.sum)+"</span></button>";}).join("");
+});
+q.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){var list=searchList(q.value);if(list.length){openDoc(list[0]);qres.hidden=true;}}
+  if(e.key==="Escape"){qres.hidden=true;q.blur();}
+});
+document.addEventListener("keydown",function(e){
+  if(e.key==="/"&&document.activeElement!==q){e.preventDefault();q.focus();}
+  if(e.key==="Escape")closeDrawer();
+});
+
+render();
+})();
+</script>
+<!--FRAGMENT-END-->
+</body>
+</html>

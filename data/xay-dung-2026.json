@@ -1,0 +1,881 @@
+{
+  "meta": {
+    "sub": "Hệ thống văn bản xây dựng từ 01/7/2026 · một luật gốc · sáu nghị định · thay toàn bộ hệ cũ",
+    "src": "Nguồn: tổng hợp danh mục văn bản trên luatvietnam.vn (29/6/2026), costflow.vn, qlda.gxd.vn và văn bản gốc; ngày ghi là ngày ban hành. Thông tư, quyết định được nhóm theo chủ đề, không phải theo điều khoản dẫn chiếu. Nội dung đã rất gọn — khi trích dẫn chính thức cần đối chiếu nguyên văn.",
+    "title": "Bản đồ văn bản xây dựng"
+  },
+  "groups": {
+    "luat": {
+      "c": "#1565c0",
+      "bg": "#e3f2fd",
+      "label": "Luật gốc"
+    },
+    "nd217": {
+      "c": "#1565c0",
+      "bg": "#e3f2fd",
+      "label": "Quản lý hoạt động xây dựng"
+    },
+    "nd207": {
+      "c": "#2e7d32",
+      "bg": "#e8f5e9",
+      "label": "Chất lượng · thi công · bảo trì"
+    },
+    "nd206": {
+      "c": "#e65100",
+      "bg": "#fff3e0",
+      "label": "Chi phí đầu tư xây dựng"
+    },
+    "nd210": {
+      "c": "#6a1b9a",
+      "bg": "#f3e5f5",
+      "label": "Hợp đồng xây dựng"
+    },
+    "nd212": {
+      "c": "#00695c",
+      "bg": "#e0f2f1",
+      "label": "Năng lực · dữ liệu"
+    },
+    "nd209": {
+      "c": "#a17c07",
+      "bg": "#fff9c4",
+      "label": "Vật liệu xây dựng"
+    },
+    "xuphat": {
+      "c": "#c62828",
+      "bg": "#ffebee",
+      "label": "Xử phạt vi phạm"
+    },
+    "lq": {
+      "c": "#546e7a",
+      "bg": "#eceff1",
+      "label": "Văn bản liên quan"
+    },
+    "cu": {
+      "c": "#8d8471",
+      "bg": "#f4f1e9",
+      "label": "Hết hiệu lực từ 01/7/2026"
+    }
+  },
+  "docs": {
+    "luat135": {
+      "code": "Luật 135/2025/QH15",
+      "type": "Luật",
+      "url": "https://chinhphu.vn/?pageid=27160&docid=216514&classid=1&typegroupid=3",
+      "g": "luat",
+      "issued": "10/12/2025",
+      "eff": "01/7/2026",
+      "sum": "Luật Xây dựng thay Luật 50/2014/QH13 và các luật sửa đổi. Gồm 8 chương, 95 điều; một số điều có hiệu lực sớm từ 01/01/2026 theo Điều 94 khoản 2.",
+      "chips": [
+        "Thông qua 10/12/2025",
+        "Hiệu lực 01/7/2026",
+        "Một số điều từ 01/01/2026 (Đ94 k2)",
+        "8 chương · 95 điều"
+      ],
+      "replaces": [
+        "luat50"
+      ],
+      "chapters": [
+        {
+          "t": "Chương I",
+          "d": "Quy định chung",
+          "nd": ""
+        },
+        {
+          "t": "Chương II",
+          "d": "Quản lý dự án đầu tư xây dựng",
+          "nd": "NĐ 217"
+        },
+        {
+          "t": "Chương III",
+          "d": "Giấy phép xây dựng, trật tự xây dựng",
+          "nd": "NĐ 217"
+        },
+        {
+          "t": "Chương IV",
+          "d": "Xây dựng công trình",
+          "nd": "NĐ 207"
+        },
+        {
+          "t": "Chương V",
+          "d": "Chi phí và hợp đồng xây dựng",
+          "nd": "NĐ 206 · 210"
+        },
+        {
+          "t": "Chương VI",
+          "d": "Điều kiện năng lực",
+          "nd": "NĐ 212"
+        },
+        {
+          "t": "Chương VII",
+          "d": "Quản lý nhà nước",
+          "nd": ""
+        },
+        {
+          "t": "Chương VIII",
+          "d": "Điều khoản thi hành",
+          "nd": ""
+        }
+      ],
+      "kw": "luật gốc khung mục lục chương điều"
+    },
+    "nd217": {
+      "code": "NĐ 217/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "nd217",
+      "issued": "19/6/2026",
+      "eff": "01/7/2026",
+      "sum": "Quản lý hoạt động xây dựng: dự án, khảo sát, thiết kế, thẩm định, giấy phép xây dựng.",
+      "bullets": [
+        "Dự án, khảo sát, thiết kế, thẩm định, giấy phép xây dựng",
+        "Bị sửa đổi bởi NĐ 347/2026; tra cứu nên dùng bản hợp nhất VBHN 91/2026 (25/9/2026)"
+      ],
+      "replaces": [
+        "nd175"
+      ],
+      "kw": "dự án khảo sát thiết kế thẩm định giấy phép trật tự"
+    },
+    "nd207": {
+      "code": "NĐ 207/2026/NĐ-CP",
+      "type": "Nghị định",
+      "url": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-207-2026-nd-cp-quy-dinh-chi-tiet-mot-so-dieu-cua-luat-xay-dung-ve-quan-ly-chat-luong-thi-cong-xay-dung-va-bao-tri-cong-trinh-xay-dung--c4911dc0-6e5b-11f1-b871-73e465f01c71",
+      "g": "nd207",
+      "issued": "15/6/2026",
+      "eff": "01/7/2026",
+      "sum": "Quản lý chất lượng, thi công và bảo trì công trình. Văn bản dùng hằng ngày của QAQC, TVGS.",
+      "bullets": [
+        "Chất lượng, thí nghiệm, giám sát, nghiệm thu, bảo trì",
+        "Văn bản QAQC dùng hằng ngày; hướng dẫn bởi TT 32/2026/TT-BXD"
+      ],
+      "replaces": [
+        "nd06"
+      ],
+      "kw": "chất lượng thi công bảo trì nghiệm thu giám sát thí nghiệm qaqc tvgs"
+    },
+    "nd206": {
+      "code": "NĐ 206/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "nd206",
+      "issued": "15/6/2026",
+      "eff": "01/7/2026",
+      "sum": "Quản lý chi phí đầu tư xây dựng: sơ bộ tổng mức, tổng mức đầu tư, dự toán, định mức, giá xây dựng.",
+      "bullets": [
+        "Sơ bộ tổng mức, tổng mức đầu tư, dự toán, định mức, giá xây dựng",
+        "Hướng dẫn bởi TT 36, 37, 38, 40/2026/TT-BXD"
+      ],
+      "replaces": [
+        "nd10"
+      ],
+      "kw": "chi phí tổng mức dự toán định mức giá xây dựng"
+    },
+    "nd210": {
+      "code": "NĐ 210/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "nd210",
+      "issued": "15/6/2026",
+      "eff": "01/7/2026",
+      "sum": "Hợp đồng xây dựng: giá hợp đồng, loại hợp đồng, điều chỉnh, thanh toán, quyết toán.",
+      "bullets": [
+        "Giá hợp đồng, loại hợp đồng, điều chỉnh, thanh toán, quyết toán",
+        "Bãi bỏ Điều 9 NĐ 35/2023; mẫu hợp đồng tại QĐ 1040/QĐ-BXD"
+      ],
+      "replaces": [
+        "nd37",
+        "nd50"
+      ],
+      "kw": "hợp đồng giá thanh toán quyết toán điều chỉnh"
+    },
+    "nd212": {
+      "code": "NĐ 212/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "nd212",
+      "issued": "17/6/2026",
+      "eff": "01/7/2026",
+      "sum": "Điều kiện năng lực; hệ thống thông tin, cơ sở dữ liệu quốc gia về hoạt động xây dựng.",
+      "bullets": [
+        "Chứng chỉ hành nghề cá nhân còn 4 lĩnh vực; UBND cấp tỉnh cấp",
+        "Bỏ chứng chỉ năng lực tổ chức → tự công bố trên cổng Bộ Xây dựng"
+      ],
+      "replaces": [
+        "nd111"
+      ],
+      "kw": "năng lực chứng chỉ hành nghề csdl hệ thống thông tin"
+    },
+    "nd209": {
+      "code": "NĐ 209/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "nd209",
+      "issued": "15/6/2026",
+      "eff": "01/7/2026",
+      "sum": "Quản lý vật liệu xây dựng: phát triển, sử dụng, vật liệu tái chế, vật liệu xanh.",
+      "bullets": [
+        "Phát triển, sử dụng vật liệu xây dựng; vật liệu tái chế, vật liệu xanh",
+        "Chất lượng sản phẩm vật liệu: TT 41/2026/TT-BXD"
+      ],
+      "replaces": [
+        "nd09"
+      ],
+      "kw": "vật liệu tái chế xanh chất lượng sản phẩm"
+    },
+    "tt32": {
+      "code": "TT 32/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd207",
+      "issued": "22/6/2026",
+      "sum": "Quy định chi tiết NĐ 207 (có kế hoạch tổ chức thí nghiệm – Điều 2).",
+      "kw": "biểu mẫu kế hoạch thí nghiệm chi tiết"
+    },
+    "tt33": {
+      "code": "TT 33/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd207",
+      "issued": "25/6/2026",
+      "sum": "Đánh giá an toàn công trình trong khai thác, sử dụng.",
+      "kw": "an toàn khai thác sử dụng đánh giá"
+    },
+    "tt42": {
+      "code": "TT 42/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd207",
+      "issued": "29/6/2026",
+      "sum": "Sửa đổi quy trình kiểm định an toàn máy, thiết bị thi công.",
+      "kw": "kiểm định máy thiết bị thi công an toàn"
+    },
+    "nd62": {
+      "code": "NĐ 62/2016 (sửa bởi NĐ 14/2026)",
+      "type": "Nghị định",
+      "g": "nd207",
+      "issued": "VBHN 54/VBHN-BXD",
+      "sum": "Thí nghiệm chuyên ngành xây dựng – tự công bố năng lực.",
+      "kw": "thí nghiệm chuyên ngành las"
+    },
+    "nd347": {
+      "code": "NĐ 347/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "nd217",
+      "issued": "08/9/2026",
+      "sum": "Sửa đổi một số điều của NĐ 217 và các nghị định khác.",
+      "kw": "sửa đổi bổ sung"
+    },
+    "vbhn91": {
+      "code": "VBHN 91/2026/VBHN-NĐ-BXD",
+      "type": "Văn bản hợp nhất",
+      "g": "nd217",
+      "issued": "25/9/2026",
+      "sum": "Bản hợp nhất NĐ 217 (đã gồm phần sửa của NĐ 347) — bản nên dùng để tra cứu thiết kế, dự án, giấy phép.",
+      "hl": true,
+      "kw": "hợp nhất tra cứu giấy phép thiết kế dự án"
+    },
+    "tt34": {
+      "code": "TT 34/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd217",
+      "issued": "25/6/2026",
+      "sum": "Cấp công trình phục vụ quản lý hoạt động xây dựng.",
+      "kw": "cấp công trình phân cấp"
+    },
+    "qd949": {
+      "code": "QĐ 949/QĐ-BXD",
+      "type": "Quyết định",
+      "g": "nd217",
+      "issued": "17/6/2026",
+      "sum": "Công bố thủ tục hành chính sửa đổi lĩnh vực xây dựng.",
+      "kw": "thủ tục hành chính"
+    },
+    "tt36": {
+      "code": "TT 36/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd206",
+      "issued": "26/6/2026",
+      "sum": "Xác định và quản lý chi phí đầu tư xây dựng.",
+      "kw": "chi phí quản lý tổng mức"
+    },
+    "tt37": {
+      "code": "TT 37/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd206",
+      "issued": "26/6/2026",
+      "sum": "Phương pháp xác định định mức dự toán, chỉ tiêu kinh tế – kỹ thuật.",
+      "kw": "định mức dự toán chỉ tiêu"
+    },
+    "tt38": {
+      "code": "TT 38/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd206",
+      "issued": "26/6/2026",
+      "sum": "Ban hành định mức xây dựng.",
+      "kw": "định mức xây dựng ban hành"
+    },
+    "tt40": {
+      "code": "TT 40/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd206",
+      "issued": "26/6/2026",
+      "sum": "Xác định chi phí bảo trì công trình.",
+      "kw": "chi phí bảo trì"
+    },
+    "qd1041": {
+      "code": "QĐ 1041/QĐ-BXD",
+      "type": "Quyết định",
+      "g": "nd206",
+      "issued": "26/6/2026",
+      "sum": "Hướng dẫn xác định khối lượng công trình.",
+      "kw": "khối lượng đo bóc"
+    },
+    "qd1040": {
+      "code": "QĐ 1040/QĐ-BXD",
+      "type": "Quyết định",
+      "g": "nd210",
+      "issued": "26/6/2026",
+      "sum": "Công bố mẫu hợp đồng xây dựng.",
+      "kw": "mẫu hợp đồng phụ lục"
+    },
+    "tt39": {
+      "code": "TT 39/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd212",
+      "issued": "26/6/2026",
+      "sum": "Hệ thống thông tin, CSDL quốc gia về hoạt động xây dựng (thay TT 24/2025).",
+      "replaces": [
+        "tt24"
+      ],
+      "kw": "csdl hệ thống thông tin dữ liệu quốc gia"
+    },
+    "qd942": {
+      "code": "QĐ 942/QĐ-BXD",
+      "type": "Quyết định",
+      "g": "nd212",
+      "issued": "17/6/2026",
+      "sum": "Khung kiến trúc dữ liệu; khung quản trị, quản lý dữ liệu Bộ Xây dựng.",
+      "kw": "kiến trúc dữ liệu quản trị"
+    },
+    "qd945": {
+      "code": "QĐ 945/QĐ-BXD",
+      "type": "Quyết định",
+      "g": "nd212",
+      "issued": "17/6/2026",
+      "sum": "Tự điền đầu dùng chung ngành xây dựng.",
+      "kw": "dùng chung hạ tầng"
+    },
+    "tt41": {
+      "code": "TT 41/2026/TT-BXD",
+      "type": "Thông tư",
+      "g": "nd209",
+      "issued": "26/6/2026",
+      "sum": "Quản lý chất lượng sản phẩm, hàng hóa vật liệu xây dựng.",
+      "kw": "chất lượng sản phẩm hàng hóa vật liệu"
+    },
+    "nd339": {
+      "code": "NĐ 339/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "xuphat",
+      "issued": "26/8/2026",
+      "eff": "26/8/2026",
+      "sum": "Xử phạt vi phạm hành chính trong xây dựng, hạ tầng kỹ thuật, nhà ở, bất động sản.",
+      "bullets": [
+        "Biết mức phạt khi làm sai — đọc sau cùng trong lộ trình QAQC"
+      ],
+      "replaces": [
+        "nd16"
+      ],
+      "kw": "xử phạt vi phạm hành chính mức phạt"
+    },
+    "nd193": {
+      "code": "NĐ 193/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "lq",
+      "issued": "01/6/2026",
+      "sum": "Quyết toán vốn đầu tư dư án.",
+      "kw": "quyết toán vốn đầu tư"
+    },
+    "nd220": {
+      "code": "NĐ 220/2026/NĐ-CP",
+      "type": "Nghị định",
+      "g": "lq",
+      "issued": "22/6/2026",
+      "sum": "Sửa NĐ 67/2023 về bảo hiểm bắt buộc, gồm bảo hiểm trong đầu tư xây dựng.",
+      "kw": "bảo hiểm bắt buộc"
+    },
+    "tt101": {
+      "code": "TT 101/2026/TT-BQP",
+      "type": "Thông tư",
+      "g": "lq",
+      "issued": "09/7/2026",
+      "sum": "Quy định thì hành Luật Xây dựng thuộc phạm vi quản lý của Bộ Quốc phòng.",
+      "kw": "quốc phòng quân sự"
+    },
+    "luat50": {
+      "code": "Luật 50/2014/QH13",
+      "type": "Luật",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "luat135"
+      ],
+      "sum": "Luật Xây dựng cũ (và các luật sửa đổi) — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd175": {
+      "code": "NĐ 175/2024/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd217"
+      ],
+      "sum": "Quản lý hoạt động xây dựng (cũ) — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd06": {
+      "code": "NĐ 06/2021/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd207"
+      ],
+      "sum": "Quản lý chất lượng, bảo trì (cũ) và các nghị định sửa đổi — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd10": {
+      "code": "NĐ 10/2021/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd206"
+      ],
+      "sum": "Quản lý chi phí đầu tư xây dựng (cũ) — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd37": {
+      "code": "NĐ 37/2015/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd210"
+      ],
+      "sum": "Hợp đồng xây dựng (cũ) — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd50": {
+      "code": "NĐ 50/2021/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd210"
+      ],
+      "sum": "Sửa đổi hợp đồng xây dựng (cũ) — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd111": {
+      "code": "NĐ 111/2024/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd212"
+      ],
+      "sum": "Điều kiện năng lực (cũ), gồm phần năng lực của NĐ 175/2024 — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd09": {
+      "code": "NĐ 09/2021/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd209"
+      ],
+      "sum": "Vật liệu xây dựng (cũ); NĐ 209 bãi bỏ thêm Điều 14 NĐ 14/2025 — hết hiệu lực từ 01/7/2026.",
+      "kw": ""
+    },
+    "nd16": {
+      "code": "NĐ 16/2022/NĐ-CP",
+      "type": "Nghị định",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "nd339"
+      ],
+      "sum": "Xử phạt vi phạm hành chính xây dựng (cũ) — hết hiệu lực từ 26/8/2026.",
+      "kw": ""
+    },
+    "tt24": {
+      "code": "TT 24/2025/TT-BXD",
+      "type": "Thông tư",
+      "g": "cu",
+      "old": true,
+      "replacedBy": [
+        "tt39"
+      ],
+      "sum": "Hệ thống thông tin, CSDL (cũ) — được thay bởi TT 39/2026.",
+      "kw": ""
+    }
+  },
+  "pairs": [
+    {
+      "old": "luat50",
+      "nw": "luat135",
+      "note": "và các luật sửa đổi"
+    },
+    {
+      "old": "nd175",
+      "nw": "nd217",
+      "note": "tra cứu nên dùng VBHN 91/2026 (đã gồm NĐ 347 sửa)"
+    },
+    {
+      "old": "nd06",
+      "nw": "nd207",
+      "note": "và các nghị định sửa đổi"
+    },
+    {
+      "old": "nd10",
+      "nw": "nd206",
+      "note": ""
+    },
+    {
+      "old": "nd37",
+      "nw": "nd210",
+      "note": "NĐ 210 thay cả NĐ 50/2021, bãi bỏ Điều 9 NĐ 35/2023"
+    },
+    {
+      "old": "nd111",
+      "nw": "nd212",
+      "note": "gồm cả phần năng lực của NĐ 175/2024"
+    },
+    {
+      "old": "nd09",
+      "nw": "nd209",
+      "note": "bãi bỏ thêm Điều 14 NĐ 14/2025"
+    },
+    {
+      "old": "nd16",
+      "nw": "nd339",
+      "note": "hiệu lực 26/8/2026"
+    },
+    {
+      "old": "tt24",
+      "nw": "tt39",
+      "note": ""
+    }
+  ],
+  "tasks": [
+    {
+      "id": "qaqc",
+      "label": "Nghiệm thu · giám sát · thí nghiệm · bảo trì",
+      "hint": "QAQC / TVGS dùng hằng ngày",
+      "docs": [
+        [
+          "nd207",
+          "Văn bản gốc dùng hằng ngày: chất lượng, giám sát, nghiệm thu, bảo trì"
+        ],
+        [
+          "tt32",
+          "Biểu mẫu và kế hoạch tổ chức thí nghiệm (Điều 2)"
+        ]
+      ]
+    },
+    {
+      "id": "antoan",
+      "label": "An toàn công trình đang khai thác, sử dụng",
+      "hint": "đánh giá định kỳ, công trình cũ",
+      "docs": [
+        [
+          "tt33",
+          "Đánh giá an toàn công trình trong khai thác, sử dụng"
+        ]
+      ]
+    },
+    {
+      "id": "kiemdinh",
+      "label": "Kiểm định máy, thiết bị thi công",
+      "hint": "cần cẩu, vận thăng, giàn giáo…",
+      "docs": [
+        [
+          "tt42",
+          "Quy trình kiểm định an toàn máy, thiết bị thi công (sửa đổi)"
+        ]
+      ]
+    },
+    {
+      "id": "las",
+      "label": "Thí nghiệm chuyên ngành xây dựng",
+      "hint": "phòng LAS, công bố năng lực",
+      "docs": [
+        [
+          "nd62",
+          "Thí nghiệm chuyên ngành – tự công bố năng lực"
+        ]
+      ]
+    },
+    {
+      "id": "duan",
+      "label": "Dự án · khảo sát · thiết kế · thẩm định · giấy phép",
+      "hint": "chuẩn bị đầu tư, xin phép",
+      "docs": [
+        [
+          "vbhn91",
+          "Bản hợp nhất nên tra (đã gồm NĐ 347 sửa NĐ 217)"
+        ],
+        [
+          "tt34",
+          "Cấp công trình phục vụ quản lý hoạt động xây dựng"
+        ],
+        [
+          "qd949",
+          "Thủ tục hành chính sửa đổi lĩnh vực xây dựng"
+        ]
+      ]
+    },
+    {
+      "id": "chiphi",
+      "label": "Tổng mức · dự toán · định mức · giá xây dựng",
+      "hint": "bóc khối lượng, lập dự toán",
+      "docs": [
+        [
+          "nd206",
+          "Khung quản lý chi phí đầu tư xây dựng"
+        ],
+        [
+          "tt36",
+          "Xác định và quản lý chi phí"
+        ],
+        [
+          "tt37",
+          "Phương pháp định mức dự toán, chỉ tiêu KT–KT"
+        ],
+        [
+          "tt38",
+          "Định mức xây dựng ban hành"
+        ],
+        [
+          "qd1041",
+          "Hướng dẫn xác định khối lượng"
+        ]
+      ]
+    },
+    {
+      "id": "baotri",
+      "label": "Chi phí bảo trì công trình",
+      "hint": "kế hoạch bảo trì, kinh phí",
+      "docs": [
+        [
+          "tt40",
+          "Xác định chi phí bảo trì công trình"
+        ]
+      ]
+    },
+    {
+      "id": "hopdong",
+      "label": "Hợp đồng · giá · điều chỉnh · thanh toán · quyết toán",
+      "hint": "QS, hợp đồng, tạm ứng",
+      "docs": [
+        [
+          "nd210",
+          "Khung hợp đồng xây dựng"
+        ],
+        [
+          "qd1040",
+          "Mẫu hợp đồng xây dựng"
+        ]
+      ]
+    },
+    {
+      "id": "nangluc",
+      "label": "Chứng chỉ hành nghề · năng lực · CSDL quốc gia",
+      "hint": "nhân sự, tổ chức, dữ liệu",
+      "docs": [
+        [
+          "nd212",
+          "4 lĩnh vực chứng chỉ cá nhân; bỏ chứng chỉ tổ chức"
+        ],
+        [
+          "tt39",
+          "Hệ thống thông tin, CSDL quốc gia"
+        ],
+        [
+          "qd942",
+          "Khung kiến trúc và quản trị dữ liệu"
+        ],
+        [
+          "qd945",
+          "Hạ tầng dùng chung ngành xây dựng"
+        ]
+      ]
+    },
+    {
+      "id": "vatlieu",
+      "label": "Vật liệu xây dựng · vật liệu xanh, tái chế",
+      "hint": "nguồn vật liệu, chứng nhận",
+      "docs": [
+        [
+          "nd209",
+          "Quản lý vật liệu xây dựng"
+        ],
+        [
+          "tt41",
+          "Chất lượng sản phẩm, hàng hóa vật liệu"
+        ]
+      ]
+    },
+    {
+      "id": "phat",
+      "label": "Vi phạm · xử phạt hành chính trong xây dựng",
+      "hint": "biết mức phạt khi làm sai",
+      "docs": [
+        [
+          "nd339",
+          "Mức phạt từ 26/8/2026 (thay NĐ 16/2022)"
+        ]
+      ]
+    },
+    {
+      "id": "baohiem",
+      "label": "Bảo hiểm bắt buộc trong đầu tư xây dựng",
+      "hint": "bảo hiểm công trình, trách nhiệm",
+      "docs": [
+        [
+          "nd220",
+          "Sửa NĐ 67/2023, gồm bảo hiểm trong đầu tư xây dựng"
+        ]
+      ]
+    },
+    {
+      "id": "von",
+      "label": "Quyết toán vốn đầu tư dự án",
+      "hint": "vốn dư, quyết toán",
+      "docs": [
+        [
+          "nd193",
+          "Quyết toán vốn đầu tư dư án"
+        ]
+      ]
+    },
+    {
+      "id": "qp",
+      "label": "Công trình thuộc phạm vi Bộ Quốc phòng",
+      "hint": "quy định riêng",
+      "docs": [
+        [
+          "tt101",
+          "Thi hành Luật Xây dựng thuộc quản lý của Bộ Quốc phòng"
+        ]
+      ]
+    }
+  ],
+  "timeline": [
+    {
+      "d": "10/12/2025",
+      "t": "Quốc hội thông qua Luật 135/2025/QH15",
+      "g": "luat"
+    },
+    {
+      "d": "15–19/6/2026",
+      "t": "Chính phủ ban hành 6 nghị định hướng dẫn",
+      "g": "nd206"
+    },
+    {
+      "d": "22–29/6/2026",
+      "t": "Bộ Xây dựng ban hành các thông tư, quyết định",
+      "g": "nd209"
+    },
+    {
+      "d": "01/7/2026",
+      "t": "Luật và 6 nghị định có hiệu lực; văn bản cũ hết hiệu lực",
+      "g": "xuphat"
+    },
+    {
+      "d": "26/8/2026",
+      "t": "NĐ 339/2026 xử phạt có hiệu lực (thay NĐ 16/2022)",
+      "g": "nd210"
+    },
+    {
+      "d": "08/9–25/9/2026",
+      "t": "NĐ 347/2026 sửa NĐ 217 → hợp nhất VBHN 91/2026",
+      "g": "nd217"
+    }
+  ],
+  "readingPath": [
+    {
+      "doc": "luat135",
+      "why": "Lướt mục lục 8 chương để nắm khung"
+    },
+    {
+      "doc": "nd207",
+      "why": "Đọc kỹ: chất lượng, giám sát, nghiệm thu — văn bản dùng hằng ngày"
+    },
+    {
+      "doc": "tt32",
+      "why": "Chi tiết NĐ 207, kế hoạch tổ chức thí nghiệm"
+    },
+    {
+      "doc": "vbhn91",
+      "why": "Thiết kế, dự án, giấy phép (NĐ 217 đã sửa)"
+    },
+    {
+      "doc": "nd339",
+      "why": "Biết mức phạt khi làm sai"
+    }
+  ],
+  "quote": "“Không cần thuộc hết luật. Cần mở đúng trang trong 2 phút. Muốn mở đúng trang thì phải biết trang đó nằm ở đâu.”",
+  "problems": [
+    {
+      "q": "Hồ sơ nghiệm thu hoàn thành công trình theo hệ văn bản mới cần những gì — xây xong nhà không biết ai kiểm tra trước khi ở",
+      "cover": 85,
+      "plan": [
+        [
+          "nd207",
+          "Quản lý chất lượng, nghiệm thu, bảo trì — văn bản gốc"
+        ],
+        [
+          "tt32",
+          "Quy định chi tiết NĐ 207, gồm kế hoạch tổ chức thí nghiệm"
+        ],
+        [
+          "luat135",
+          "Khung pháp lý chung của hệ mới"
+        ]
+      ],
+      "note": "Biểu mẫu nghiệm thu nằm ở phụ lục kèm thông tư hướng dẫn — mở TT 32/2026 khi lập hồ sơ."
+    },
+    {
+      "q": "Hợp đồng và hồ sơ cũ còn dẫn chiếu NĐ 06/2021 thì thay bằng văn bản nào",
+      "cover": 90,
+      "plan": [
+        [
+          "nd207",
+          "Bản thay thế NĐ 06/2021 về quản lý chất lượng, thi công, bảo trì"
+        ],
+        [
+          "vbhn91",
+          "Bản hợp nhất tiện tra cứu toàn hệ văn bản"
+        ],
+        [
+          "luat135",
+          "Khung pháp lý gốc"
+        ]
+      ],
+      "note": "Đối chiếu điều khoản chuyển tiếp trước khi áp cho hợp đồng ký trước 01/7/2026."
+    },
+    {
+      "q": "Bị lập biên bản xử phạt vi phạm hành chính về xây dựng thì xem văn bản nào",
+      "cover": 75,
+      "plan": [
+        [
+          "nd339",
+          "Nghị định xử phạt vi phạm hành chính trong xây dựng, nhà ở, bất động sản"
+        ],
+        [
+          "nd347",
+          "Phần sửa đổi liên quan trong hệ nghị định mới"
+        ],
+        [
+          "vbhn91",
+          "Bản hợp nhất để tra hành vi và mức phạt liền mạch"
+        ]
+      ]
+    }
+  ]
+}
