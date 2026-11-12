@@ -26,7 +26,7 @@ export function analyze(DATA, q, lex) {
   const drop = {};
   (lex || []).forEach(e => {
     if (!new RegExp(e.p).test(nq)) return;
-    says.push(e.say);
+    if (says.indexOf(e.say) < 0) says.push(e.say);
     (e.add || []).forEach(w => { if (cs.indexOf(w) < 0) cs.push(w); });
     (e.drop || []).forEach(w => { drop[w] = 1; });
   });
@@ -74,16 +74,35 @@ export function analyze(DATA, q, lex) {
       .sort((a, b) => ds[b].s - ds[a].s).slice(0, 4)
       .map(id => [id, 'Khớp khái niệm trong mô tả vấn đề của bạn']);
   let note = '', curated = false;
+  let bestP = null, bestPScore = 0;
+  const keyScore = p => {
+    let best = 0;
+    (p.keys || []).forEach(k => {
+      const nk = norm(k).trim();
+      if (nk && nq.indexOf(nk) >= 0) best = Math.max(best, nk.split(/\s+/).length);
+    });
+    return best;
+  };
   (DATA.problems || []).forEach(p => {
-    const pc = concepts(p.q);
-    if (!pc.length) return;
-    const hit = pc.filter(w => cs.indexOf(w) >= 0).length;
-    if (hit >= 2 && hit / Math.min(pc.length, cs.length) >= 0.5) {
-      const pl = (p.plan || []).filter(x => D(x[0]));
-      if (pl.length) { plan = pl; curated = true; pct = Math.max(pct, Math.min(100, p.cover || pct)); }
-      if (p.note) note = p.note;
+    const ks = keyScore(p);
+    let score = 0;
+    if (ks) score = 100 + ks;
+    else {
+      const pc = concepts(p.q);
+      if (!pc.length) return;
+      const hit = pc.filter(w => cs.indexOf(w) >= 0).length;
+      const qCov = hit / Math.max(1, cs.length);
+      const pCov = hit / Math.max(1, pc.length);
+      if (hit >= 2 && qCov >= 0.5) score = qCov * 2 + pCov + Math.min(hit, 6) * 0.05;
     }
+    if (score > bestPScore) { bestPScore = score; bestP = p; }
   });
+  if (bestP) {
+    const pl = (bestP.plan || []).filter(x => D(x[0]));
+    if (pl.length) { plan = pl; curated = true; pct = Math.max(pct, Math.min(100, bestP.cover || pct)); }
+    if (bestP.note) note = bestP.note;
+  }
+
   const inPlan = {}; plan.forEach(p => { inPlan[p[0]] = 1; });
   let best = 0;
   plan.forEach(p => { if (ds[p[0]] && ds[p[0]].s > best) best = ds[p[0]].s; });

@@ -43,7 +43,7 @@ ok(Array.isArray(srcs) && srcs.length === 5, 'api/sources đủ 5 nguồn chính
 const badFetch = await fetch(BASE + '/api/sets/xay-dung-2026/fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: 'https://evil.example.com/a.pdf' }) });
 ok(badFetch.status === 400, 'fetch chặn host ngoài allowlist');
 const sets0 = await (await fetch(BASE + '/api/sets')).json();
-ok(sets0.length === 2, 'thư viện seed 2 bộ (xây dựng, thuế)');
+ok(sets0.length === 3, 'thư viện seed 3 bộ (xây dựng, thuế, đất đai)');
 const ask = await (await fetch(BASE + '/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q: 'hóa đơn điện tử lập sai thuế suất, khách yêu cầu hủy và lập lại' }) })).json();
 ok(ask.results.length >= 1 && ask.results[0].id === 'thue-2026', 'cross-set ask xếp hạng bộ thuế đầu tiên (got: ' + (ask.results[0] || {}).id + ', ' + (ask.results[0] || {}).pct + '%)');
 
@@ -52,7 +52,10 @@ const LAY = [
   ['xây xong nhà không biết ai kiểm tra trước khi ở', 'xay-dung-2026', 'nd207'],
   ['nuôi con nhỏ không đi làm có được trừ tiền thuế không', 'thue-2026', 'nd253'],
   ['hóa đơn tính sai tiền khách bắt sửa lại', 'thue-2026', null],
-  ['bị phạt vì xây nhà không có giấy phép', 'xay-dung-2026', null]
+  ['bị phạt vì xây nhà không có giấy phép', 'xay-dung-2026', null],
+  ['mua đất giấy tay có làm được sổ đỏ không', 'dat-dai-2024', 'nd101'],
+  ['xây nhà trên đất nông nghiệp bị phạt bao nhiêu', 'dat-dai-2024', 'nd123'],
+  ['nộp hồ sơ sổ đỏ ở xã hay huyện', 'dat-dai-2024', 'nd151']
 ];
 for (const [q, wantSet, wantDoc] of LAY) {
   const r = await (await fetch(BASE + '/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q }) })).json();
@@ -178,8 +181,14 @@ ok(guard.status === 400, 'chặn path traversal ở /api/file');
 console.log('CONSOLE ERRORS:', errors.length ? errors : 'none');
 if (errors.length) failures.push('console errors');
 
-// cleanup: unregister test sets (files remain on disk)
-for (const s of [fid, uiSet && uiSet.id]) if (s) await fetch(BASE + '/api/sets/' + s, { method: 'DELETE' });
+// cleanup: unregister test sets and remove their on-disk fixture folders
+const SETS_DIR = path.join(__dirname, 'sets');
+for (const s of [fid, uiSet && uiSet.id]) {
+  if (!s) continue;
+  await fetch(BASE + '/api/sets/' + s, { method: 'DELETE' });
+  if (s.startsWith('fixture-')) fs.rmSync(path.join(SETS_DIR, s), { recursive: true, force: true });
+}
+fs.rmSync(fixture, { recursive: true, force: true });
 
 ws.close(); chrome.kill(); server.kill();
 console.log(failures.length ? '\nE2E FAIL: ' + failures.join(' | ') : '\nE2E ALL PASS');

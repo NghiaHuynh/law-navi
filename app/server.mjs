@@ -263,7 +263,7 @@ const server = http.createServer(async (req, res) => {
       const results = [];
       for (const s of loadSets()) {
         let d; try { d = readData(s); } catch { continue; }
-        const r = analyze(d, q, LEXICON);
+        const r = analyze(d, q, LEXICON.concat(d.lexicon || []));
         if (!r) continue;
         results.push({
           id: s.id, name: s.name, title: (d.meta && d.meta.title) || s.name,

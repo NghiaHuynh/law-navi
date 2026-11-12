@@ -18,5 +18,15 @@
   "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-thue/ban-do/data.json",
   "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-thue/ban-do/index.html",
   "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-thue"
+ },
+ {
+  "id": "dat-dai-2024",
+  "name": "Đất đai 2024",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-11T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai"
  }
 ]
