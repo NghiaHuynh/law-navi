@@ -5,6 +5,13 @@
   "type": "module",
   "description": "Ứng dụng local: thư viện bộ văn bản pháp luật, nhập thư mục, biên soạn, bản đồ trực quan và phân tích vấn đề.",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "node test-e2e.mjs"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.7",
+    "ws": "^8.22.2"
   }
 }

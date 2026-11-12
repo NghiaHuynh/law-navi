@@ -4,7 +4,8 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { analyze, norm } from './lib/analyze.mjs';
+import { analyze } from './lib/analyze.mjs';
+import { MIME, insideReal, hostAllowed, htmlToText, validateData, walkFiles, slug, safeFilename, readCapped } from './lib/shared.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SKILL = process.env.LAW_MAP_SKILL || path.join(os.homedir(), '.qoder', 'skills', 'law-map');
@@ -27,13 +28,7 @@ const loadSets = () => JSON.parse(fs.readFileSync(SETS_FILE, 'utf8'));
 const saveSets = s => fs.writeFileSync(SETS_FILE, JSON.stringify(s, null, 1) + '\n');
 const findSet = id => loadSets().find(s => s.id === id);
 
-const MIME = {
-  '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.md': 'text/plain; charset=utf-8',
-  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif',
-  '.pdf': 'application/pdf', '.svg': 'image/svg+xml'
-};
-const json = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); };
+const json = (res, code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(obj)); };
 const readBody = req => new Promise((resolve, reject) => {
   let n = 0; const chunks = [];
   req.on('data', c => { n += c.length; if (n > BODY_CAP) { reject(new Error('Body quá lớn (>64MB)')); req.destroy(); return; } chunks.push(c); });
@@ -49,49 +44,18 @@ const runTool = (script, args) => new Promise(resolve => {
 });
 const atomicWrite = (file, text) => { const tmp = file + '.tmp'; fs.writeFileSync(tmp, text); fs.renameSync(tmp, file); };
 const readData = s => JSON.parse(fs.readFileSync(s.dataPath, 'utf8'));
-const slug = name => (norm(name).trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 40) || 'bo');
 function newId(name) {
   const sets = loadSets(); let id;
   do { id = slug(name) + '-' + Date.now().toString(36).slice(-4) + Math.floor(Math.random() * 36).toString(36); } while (sets.some(s => s.id === id));
   return id;
 }
-const inside = (dir, rel) => { const p = path.resolve(dir, rel); return p === dir || p.startsWith(dir + path.sep); };
-const TEXT_EXT = new Set(['.txt', '.md', '.markdown', '.text']);
-const IMG_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif']);
-const kindOf = ext => TEXT_EXT.has(ext) ? 'text' : IMG_EXT.has(ext) ? 'image' : ext === '.pdf' ? 'pdf' : 'other';
-const htmlToText = h => h
-  .replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ')
-  .replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|tr|li|h[1-6]|table)>/gi, '\n')
-  .replace(/<[^>]+>/g, ' ')
-  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-  .replace(/[ \t]+/g, ' ').replace(/\n\s*\n+/g, '\n').trim();
-const hostAllowed = h => FETCH_HOSTS.some(x => h === x || h.endsWith('.' + x));
-const SKIP_WALK = new Set(['node_modules', '.git', 'shots', 'data', 'out', 'demo-auto', 'app', 'ban-do']);
-function walkFiles(dir, base = '', out = []) {
-  if (out.length >= 500) return out;
-  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (ent.name.startsWith('.') || SKIP_WALK.has(ent.name)) continue;
-    const rel = base ? base + '/' + ent.name : ent.name;
-    if (ent.isDirectory()) walkFiles(path.join(dir, ent.name), rel, out);
-    else out.push({ rel, kind: kindOf(path.extname(ent.name).toLowerCase()), size: fs.statSync(path.join(dir, ent.name)).size });
-  }
-  return out;
-}
+
 const skeleton = name => ({
   meta: { title: name, sub: 'Bản nháp — chưa trích xuất', src: '' },
   groups: { lq: { c: '#546e7a', bg: '#eceff1', label: 'Văn bản liên quan' } },
   docs: {}, pairs: [], tasks: [], timeline: [], readingPath: [], problems: [], quote: ''
 });
-function validateData(d) {
-  if (!d || typeof d !== 'object') return 'Dữ liệu phải là object';
-  if (!d.docs || typeof d.docs !== 'object') return 'Thiếu docs';
-  if (!d.groups || typeof d.groups !== 'object') return 'Thiếu groups';
-  for (const [id, doc] of Object.entries(d.docs)) {
-    if (!doc || typeof doc.code !== 'string' || !doc.code.trim()) return `Văn bản "${id}" thiếu code`;
-    if (typeof doc.type !== 'string') return `Văn bản "${id}" thiếu type`;
-  }
-  return '';
-}
+
 async function renderSet(s) {
   const r = await runTool(RENDER, [ENGINE, s.dataPath, s.outPath]);
   if (r.code !== 0) throw new Error('Render lỗi: ' + (r.err || r.out));
@@ -114,6 +78,19 @@ function setStats(s) {
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://127.0.0.1');
   const p = u.pathname;
+  // Lớp phòng thủ cho app local: chỉ nhận request từ chính origin này.
+  // Host lạ (DNS rebinding) hoặc Origin khác (malicious site POST vào 127.0.0.1) → chặn.
+  {
+    const host = String(req.headers.host || '').toLowerCase();
+    const okHosts = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`, `[::1]:${PORT}`]);
+    if (host && !okHosts.has(host)) return json(res, 403, { error: 'Host không hợp lệ' });
+    const origin = req.headers.origin;
+    if (origin) {
+      let oHost = '';
+      try { oHost = new URL(origin).host.toLowerCase(); } catch {}
+      if (oHost !== host) return json(res, 403, { error: 'Origin không khớp — từ chối request cross-site' });
+    }
+  }
   try {
     if (p === '/api/health') return json(res, 200, { ok: true, skill: SKILL, engine: fs.existsSync(ENGINE), node: process.version });
 
@@ -170,7 +147,7 @@ const server = http.createServer(async (req, res) => {
         let total = 0;
         for (const f of files) {
           const rel = String(f.rel || '');
-          if (!rel || path.isAbsolute(rel) || rel.split(/[\\/]/).includes('..') || !inside(s.sourceDir, rel)) return json(res, 400, { error: 'Tên file không hợp lệ: ' + rel });
+          if (!rel || path.isAbsolute(rel) || rel.split(/[\\/]/).includes('..') || !insideReal(s.sourceDir, rel)) return json(res, 400, { error: 'Tên file không hợp lệ: ' + rel });
           const buf = Buffer.from(String(f.b64 || ''), 'base64');
           total += buf.length;
           if (total > BODY_CAP) return json(res, 400, { error: 'Tổng dung lượng vượt 64MB' });
@@ -193,7 +170,7 @@ const server = http.createServer(async (req, res) => {
         const b = await readBody(req);
         let uu; try { uu = new URL(String(b.url || '')); } catch { return json(res, 400, { error: 'URL không hợp lệ' }); }
         if (uu.protocol !== 'https:' && uu.protocol !== 'http:') return json(res, 400, { error: 'Chỉ nhận http/https' });
-        if (!hostAllowed(uu.hostname.toLowerCase())) return json(res, 400, { error: 'Chỉ tải từ nguồn chính thống: ' + FETCH_HOSTS.join(', ') });
+        if (!hostAllowed(uu.hostname.toLowerCase(), FETCH_HOSTS)) return json(res, 400, { error: 'Chỉ tải từ nguồn chính thống: ' + FETCH_HOSTS.join(', ') });
         const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 30000);
         const headers = { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', 'Accept': 'text/html,application/pdf,*/*' };
         let resp, target = uu;
@@ -203,7 +180,7 @@ const server = http.createServer(async (req, res) => {
             if ([301, 302, 303, 307, 308].includes(resp.status)) {
               const loc = resp.headers.get('location'); if (!loc) break;
               target = new URL(loc, target);
-              if (!hostAllowed(target.hostname.toLowerCase())) { clearTimeout(t); return json(res, 400, { error: 'Redirect ra ngoài nguồn chính thống: ' + target.hostname }); }
+              if (!hostAllowed(target.hostname.toLowerCase(), FETCH_HOSTS)) { clearTimeout(t); return json(res, 400, { error: 'Redirect ra ngoài nguồn chính thống: ' + target.hostname }); }
               continue;
             }
             break;
@@ -211,8 +188,9 @@ const server = http.createServer(async (req, res) => {
         } catch (e) { clearTimeout(t); return json(res, 502, { error: 'Không tải được: ' + e.message }); }
         clearTimeout(t);
         if (!resp || !resp.ok) return json(res, 502, { error: 'Nguồn trả HTTP ' + (resp && resp.status) });
-        const buf = Buffer.from(await resp.arrayBuffer());
-        if (buf.length > 30 * 1024 * 1024) return json(res, 400, { error: 'File quá lớn (>30MB)' });
+        let buf;
+        try { buf = await readCapped(resp, 30 * 1024 * 1024); }
+        catch (e) { return json(res, 400, { error: e.message }); }
         const ct = String(resp.headers.get('content-type') || '');
         const isPdf = ct.includes('pdf') || /\.pdf$/i.test(uu.pathname);
         const base = (decodeURIComponent(uu.pathname.split('/').filter(Boolean).pop() || 'nguon').replace(/\.[a-z0-9]+$/i, '').replace(/[^a-zA-Z0-9._-]/g, '-').slice(0, 60)) || 'nguon';
@@ -236,7 +214,7 @@ const server = http.createServer(async (req, res) => {
         if (stale) await renderSet(s);
         const html = fs.readFileSync(s.outPath);
         const headers = { 'Content-Type': 'text/html; charset=utf-8' };
-        if (u.searchParams.get('download') === '1') headers['Content-Disposition'] = 'attachment; filename="' + s.id + '.html"';
+        if (u.searchParams.get('download') === '1') headers['Content-Disposition'] = 'attachment; filename="' + safeFilename(s.id) + '.html"';
         res.writeHead(200, headers); return res.end(html);
       }
       if (sub === '' && req.method === 'DELETE') {
@@ -248,11 +226,13 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/file' && req.method === 'GET') {
       const s = findSet(u.searchParams.get('set') || '');
       const rel = u.searchParams.get('rel') || '';
-      if (!s || !rel || !inside(s.sourceDir, rel)) return json(res, 400, { error: 'Tham số không hợp lệ' });
+      if (!s || !rel || !insideReal(s.sourceDir, rel)) return json(res, 400, { error: 'Tham số không hợp lệ' });
       const file = path.resolve(s.sourceDir, rel);
       if (!fs.existsSync(file) || !fs.statSync(file).isFile()) return json(res, 404, { error: 'Không tìm thấy file' });
       const ext = path.extname(file).toLowerCase();
-      res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+      const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff' };
+      if (ext === '.html' || ext === '.svg' || ext === '.xml') headers['Content-Disposition'] = 'attachment'; // không render HTML/SVG trong origin của app
+      res.writeHead(200, headers);
       return fs.createReadStream(file).pipe(res);
     }
 
@@ -277,16 +257,20 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === 'GET') {
       const rel = p === '/' ? 'index.html' : p.slice(1);
-      if (rel.includes('..')) return json(res, 400, { error: 'bad path' });
+      if (rel.split('/').includes('..')) return json(res, 400, { error: 'bad path' });
       const file = path.join(PUBLIC, rel);
-      if (file.startsWith(PUBLIC) && fs.existsSync(file) && fs.statSync(file).isFile()) {
-        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+      if ((file === PUBLIC || file.startsWith(PUBLIC + path.sep)) && fs.existsSync(file) && fs.statSync(file).isFile()) {
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'X-Content-Type-Options': 'nosniff' });
         return fs.createReadStream(file).pipe(res);
       }
     }
     return json(res, 404, { error: 'Không tìm thấy: ' + p });
   } catch (e) {
-    return json(res, 500, { error: String(e && e.message || e) });
+    const msg = String((e && e.message) || e);
+    if (msg.startsWith('Body quá lớn')) return json(res, 413, { error: msg });
+    if (msg === 'JSON không hợp lệ') return json(res, 400, { error: msg });
+    console.error('[500]', e);
+    return json(res, 500, { error: 'Lỗi máy chủ nội bộ' });
   }
 });
 
