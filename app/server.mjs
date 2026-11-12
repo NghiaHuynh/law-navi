@@ -7,7 +7,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dispatch } from './lib/routes.mjs';
-import { errorHandler, badRequest, payloadTooLarge } from './lib/errors.mjs';
+import { errorHandler, badRequest, forbidden, payloadTooLarge } from './lib/errors.mjs';
 import { authMiddleware, authEnabled } from './lib/auth.mjs';
 import { MAX_BODY_BYTES } from './lib/types.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -60,6 +60,19 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Content-Security-Policy', CSP);
     if (u.pathname.startsWith('/api/')) res.setHeader('Cache-Control', 'no-store');
     const run = async () => {
+      // Lớp phòng thủ cho app local: chỉ nhận request từ chính origin này.
+      // Host lạ (DNS rebinding) hoặc Origin khác (malicious site POST vào 127.0.0.1) → chặn.
+      {
+        const host = String(req.headers.host || '').toLowerCase();
+        const okHosts = new Set([`127.0.0.1:${PORT}`, `localhost:${PORT}`, `[::1]:${PORT}`]);
+        if (host && !okHosts.has(host)) throw forbidden('Host không hợp lệ');
+        const origin = req.headers.origin;
+        if (origin) {
+          let oHost = '';
+          try { oHost = new URL(origin).host.toLowerCase(); } catch {}
+          if (oHost !== host) throw forbidden('Origin không khớp — từ chối request cross-site');
+        }
+      }
       if (req.method !== 'GET' || u.pathname !== '/api/health') {
         await new Promise((resolve, reject) => authMiddleware(req, res, (err) => (err ? reject(err) : resolve())));
       }

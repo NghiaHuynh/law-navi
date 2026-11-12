@@ -6,6 +6,7 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { analyze, norm } from './analyze.mjs';
+import { insideReal } from './shared.mjs';
 import { setsRepo, datasetsRepo, readData, setStats, skeleton, newId, slug, inside, walkFiles, kindOf, htmlToText, atomicWrite, loadSets, saveSets, findSet, SETS_DIR } from './db.mjs';
 import { validateDatasetBody, requireQuery, requireSetId, requireString, requireObject, requireArray, requireBoolean, requireNumber, requireDateStr, requireColor, requireGroupId, requireDocId, requireQueryString, requireBase64 } from './validate.mjs';
 import { badRequest, notFound, badGateway, internal } from './errors.mjs';
@@ -83,7 +84,7 @@ export const uploadSetFiles = async (req, res, ctx) => {
   let total = 0;
   for (const f of files) {
     const rel = String((f && f.rel) || '');
-    if (!rel || path.isAbsolute(rel) || rel.split(/[\\/]/).includes('..') || !inside(set.sourceDir, rel)) throw badRequest('Tên file không hợp lệ: ' + rel);
+    if (!rel || path.isAbsolute(rel) || rel.split(/[\\/]/).includes('..') || !insideReal(set.sourceDir, rel)) throw badRequest('Tên file không hợp lệ: ' + rel);
     const buf = Buffer.from(String((f && f.b64) || ''), 'base64');
     total += buf.length;
     if (total > MAX_BODY_BYTES) throw badRequest('Tổng dung lượng vượt 64MB');
@@ -179,7 +180,7 @@ export const deleteSet = async (req, res, ctx) => {
 export const getFile = async (req, res, ctx) => {
   const set = setsRepo.get(requireSetId(req.query.get('set') || ''));
   const rel = String(req.query.get('rel') || '');
-  if (!set || !rel || !inside(set.sourceDir, rel)) throw badRequest('Tham số không hợp lệ');
+  if (!set || !rel || !insideReal(set.sourceDir, rel)) throw badRequest('Tham số không hợp lệ');
   const file = path.resolve(set.sourceDir, rel);
   if (!fs.existsSync(file) || !fs.statSync(file).isFile()) throw notFound('Không tìm thấy file');
   const ext = path.extname(file).toLowerCase();

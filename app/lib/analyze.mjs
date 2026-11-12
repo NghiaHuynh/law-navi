@@ -2,7 +2,8 @@
 const MARKS = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
 export function norm(s) {
   return String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(MARKS, '')
-    .replace(/đ/g, 'd').replace(/[^a-z0-9\s]/g, ' ');
+    .replace(/đ/g, 'd').replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
 }
 const STOP = new Set(('va cua thi la bi duoc cho voi khi nao gi khong co phai lam the toi minh can muon nen ma van dang da se de tren trong tai ve ra sao nhu the bao nhieu phan tram hoac cung den tu o dau bat dau giup xem biet lien quan he thong van ban phap luat').split(' '));
 export function concepts(q) {
@@ -13,9 +14,12 @@ export function concepts(q) {
   });
   return out;
 }
+const asText = v => Array.isArray(v) ? v.join(' ') : String(v == null ? '' : v);
 function docHay(DATA, id) {
   const d = DATA.docs[id];
-  return norm([d.code, d.sum, (d.bullets || []).join(' '), (d.kw || ''), (d.chips || []).join(' '), ((DATA.groups[d.g] || {}).label || '')].join(' '));
+  if (!d || typeof d !== 'object') return '';
+  const group = (DATA.groups && DATA.groups[d.g]) || {};
+  return norm([d.code, d.sum, asText(d.bullets), d.kw, asText(d.chips), group.label].join(' '));
 }
 function wset(s) { const o = {}; norm(s).split(/\s+/).forEach(w => { if (w) o[w] = 1; }); return o; }
 export function analyze(DATA, q, lex) {
@@ -25,15 +29,22 @@ export function analyze(DATA, q, lex) {
   const nq = norm(q);
   const drop = {};
   (lex || []).forEach(e => {
-    if (!new RegExp(e.p).test(nq)) return;
+    if (!e || typeof e.p !== 'string') return;
+    let re;
+    try { re = new RegExp(e.p); } catch { return; } // bỏ qua mẫu lỗi thay vì sập toàn bộ phân tích
+    if (!re.test(nq)) return;
     if (says.indexOf(e.say) < 0) says.push(e.say);
-    (e.add || []).forEach(w => { if (cs.indexOf(w) < 0) cs.push(w); });
-    (e.drop || []).forEach(w => { drop[w] = 1; });
+    (Array.isArray(e.add) ? e.add : []).forEach(w => { if (cs.indexOf(w) < 0) cs.push(w); });
+    (Array.isArray(e.drop) ? e.drop : []).forEach(w => { drop[w] = 1; });
   });
   cs = cs.filter(w => !drop[w]);
-  if (!cs.length) return null;
+  if (!cs.length || !DATA || typeof DATA !== 'object' || !DATA.docs || typeof DATA.docs !== 'object') return null;
   const hay = {};
-  Object.keys(DATA.docs).forEach(id => { hay[id] = wset(docHay(DATA, id)); });
+  Object.keys(DATA.docs).forEach(id => {
+    const d = DATA.docs[id];
+    if (!d || typeof d !== 'object') return;
+    hay[id] = wset(docHay(DATA, id));
+  });
   const df = {};
   cs.forEach(w => { df[w] = 0; Object.keys(hay).forEach(id => { if (hay[id][w]) df[w]++; }); });
   const total = Object.keys(hay).length;
@@ -61,15 +72,16 @@ export function analyze(DATA, q, lex) {
   Object.keys(ds).forEach(id => ds[id].cov.forEach(w => { covered[w] = 1; }));
   const miss = cs.filter(w => !covered[w]);
   let pct = Math.round((cs.length - miss.length) / cs.length * 100);
-  const tScore = (DATA.tasks || []).map(t => {
-    const th = wset(t.label + ' ' + t.hint + ' ' + t.docs.map(p => p[1]).join(' '));
+  const tScore = (Array.isArray(DATA.tasks) ? DATA.tasks : []).map(t => {
+    const tdocs = (t && Array.isArray(t.docs)) ? t.docs : [];
+    const th = wset(String((t && t.label) || '') + ' ' + String((t && t.hint) || '') + ' ' + tdocs.map(p => (Array.isArray(p) ? p[1] : '')).join(' '));
     let s = 0;
     cs.forEach(w => { if (th[w]) s += wOf(w) * 1.2; });
-    t.docs.forEach(p => { if (ds[p[0]]) s += ds[p[0]].s * 0.5; });
-    return { t, s };
+    tdocs.forEach(p => { if (Array.isArray(p) && ds[p[0]]) s += ds[p[0]].s * 0.5; });
+    return { t: { ...t, docs: tdocs }, s };
   }).sort((a, b) => b.s - a.s);
   const top = tScore.length && tScore[0].s > 0 ? tScore[0].t : null;
-  let plan = top ? top.docs.filter(p => D(p[0])) :
+  let plan = top ? top.docs.filter(p => Array.isArray(p) && D(p[0])) :
     Object.keys(ds).filter(id => ds[id].s > 0 && !D(id).old)
       .sort((a, b) => ds[b].s - ds[a].s).slice(0, 4)
       .map(id => [id, 'Khớp khái niệm trong mô tả vấn đề của bạn']);
@@ -77,13 +89,14 @@ export function analyze(DATA, q, lex) {
   let bestP = null, bestPScore = 0;
   const keyScore = p => {
     let best = 0;
-    (p.keys || []).forEach(k => {
+    (Array.isArray(p.keys) ? p.keys : []).forEach(k => {
       const nk = norm(k).trim();
       if (nk && nq.indexOf(nk) >= 0) best = Math.max(best, nk.split(/\s+/).length);
     });
     return best;
   };
-  (DATA.problems || []).forEach(p => {
+  (Array.isArray(DATA.problems) ? DATA.problems : []).forEach(p => {
+    if (!p || typeof p !== 'object') return;
     const ks = keyScore(p);
     let score = 0;
     if (ks) score = 100 + ks;
@@ -98,8 +111,12 @@ export function analyze(DATA, q, lex) {
     if (score > bestPScore) { bestPScore = score; bestP = p; }
   });
   if (bestP) {
-    const pl = (bestP.plan || []).filter(x => D(x[0]));
-    if (pl.length) { plan = pl; curated = true; pct = Math.max(pct, Math.min(100, bestP.cover || pct)); }
+    const pl = (Array.isArray(bestP.plan) ? bestP.plan : []).filter(x => Array.isArray(x) && D(x[0]));
+    if (pl.length) {
+      plan = pl; curated = true;
+      const cover = Number(bestP.cover);
+      if (Number.isFinite(cover)) pct = Math.max(pct, Math.min(100, Math.max(0, cover)));
+    }
     if (bestP.note) note = bestP.note;
   }
 
