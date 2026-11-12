@@ -105,9 +105,9 @@ describe('/api/ask — input rác', () => {
     const r = await post('/api/ask', { q: '<script>alert(1)</script>' });
     expect(r.status).toBe(200);
   });
-  it('q rất dài → server vẫn phản hồi', async () => {
+  it('q rất dài → server từ chối 400 (cap MAX_QUERY_LENGTH), không crash', async () => {
     const r = await post('/api/ask', { q: 'nghiệm thu '.repeat(500) });
-    expect(r.status).toBe(200);
+    expect(r.status).toBe(400);
   });
 });
 
