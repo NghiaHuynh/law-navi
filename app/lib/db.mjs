@@ -10,6 +10,9 @@ import { MAX_WALK_FILES } from './types.mjs';
 const APP_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const SETS_FILE = process.env.LAW_NAV_SETS_FILE || path.join(APP_DIR, 'sets.json');
 const SETS_DIR = process.env.LAW_NAV_SETS_DIR || path.join(APP_DIR, 'sets');
+const TRASH_FILE = path.join(path.dirname(SETS_FILE), '.sets-trash.json');
+
+const loadTrash = () => { try { return JSON.parse(fs.readFileSync(TRASH_FILE, 'utf8')); } catch { return []; } };
 
 export { SETS_FILE, SETS_DIR };
 
@@ -89,7 +92,18 @@ export const setsRepo = {
     return s;
   },
   /** @param {string} id @returns {boolean} */
-  remove: (id) => { const sets = loadSets(); const before = sets.length; const next = sets.filter(x => x.id !== id); if (before === next.length) return false; saveSets(next); return true; }
+  remove: (id) => { const sets = loadSets(); const before = sets.length; const next = sets.filter(x => x.id !== id); if (before === next.length) return false; saveSets(next); return true; },
+  /** Gỡ chỉ bỏ đăng ký — giữ bản ghi vào thùng rác để Hoàn tác khôi phục đúng id, không trích xuất lại. @param {SetRecord} record */
+  trash: (record) => { const t = loadTrash().filter(x => x.id !== record.id); t.push(record); atomicWrite(TRASH_FILE, JSON.stringify(t.slice(-20), null, 1) + '\n'); },
+  /** @param {string} id @returns {SetRecord|null} */
+  restore: (id) => {
+    const t = loadTrash();
+    const rec = t.find(x => x.id === id);
+    if (!rec || loadSets().some(s => s.id === id) || !fs.existsSync(rec.dataPath)) return null;
+    const sets = loadSets(); sets.push(rec); saveSets(sets);
+    atomicWrite(TRASH_FILE, JSON.stringify(t.filter(x => x.id !== id), null, 1) + '\n');
+    return rec;
+  }
 };
 
 /** @namespace DatasetsRepository */

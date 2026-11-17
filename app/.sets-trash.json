@@ -1,0 +1,202 @@
+[
+ {
+  "id": "sectest-g4l40",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:29:15.832Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4l40/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4l40/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4l40/source"
+ },
+ {
+  "id": "sectest-g4nay",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:29:15.911Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4nay/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4nay/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4nay/source"
+ },
+ {
+  "id": "sectest-g4no5",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:29:15.924Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4no5/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4no5/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4no5/source"
+ },
+ {
+  "id": "sectest-g4omi",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:29:15.962Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4omi/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4omi/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4omi/source"
+ },
+ {
+  "id": "sectest-g4pi2",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:29:15.991Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4pi2/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4pi2/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-g4pi2/source"
+ },
+ {
+  "id": "fixture-chat-luong-g5nb6",
+  "name": "Fixture chất lượng",
+  "owned": true,
+  "draft": false,
+  "createdAt": "2026-11-17T07:29:17.207Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-g5nb6/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-g5nb6/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794900556519"
+ },
+ {
+  "id": "fixture-ui-ggiof",
+  "name": "Fixture UI",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:29:31.297Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-ggiof/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-ggiof/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794900556519"
+ },
+ {
+  "id": "fixture-chat-luong-ipcd8",
+  "name": "Fixture chất lượng",
+  "owned": true,
+  "draft": false,
+  "createdAt": "2026-11-17T07:31:16.046Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-ipcd8/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-ipcd8/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794900675088"
+ },
+ {
+  "id": "fixture-ui-ivei4",
+  "name": "Fixture UI",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:31:23.898Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-ivei4/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-ivei4/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794900675088"
+ },
+ {
+  "id": "sectest-cbrxq",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.142Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbrxq/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbrxq/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbrxq/source"
+ },
+ {
+  "id": "sectest-cbsd7",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.158Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbsd7/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbsd7/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbsd7/source"
+ },
+ {
+  "id": "sectest-cbsm1",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.166Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbsm1/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbsm1/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbsm1/source"
+ },
+ {
+  "id": "sectest-cbxdk",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.338Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbxdk/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbxdk/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbxdk/source"
+ },
+ {
+  "id": "sectest-cby2q",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.362Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cby2q/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cby2q/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cby2q/source"
+ },
+ {
+  "id": "sectest-cby7n",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.368Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cby7n/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cby7n/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cby7n/source"
+ },
+ {
+  "id": "sectest-cbynh",
+  "name": "__sectest__",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:18.384Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbynh/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbynh/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/sectest-cbynh/source"
+ },
+ {
+  "id": "fixture-chat-luong-ccuh7",
+  "name": "Fixture chất lượng",
+  "owned": true,
+  "draft": false,
+  "createdAt": "2026-11-17T07:54:19.529Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-ccuh7/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-ccuh7/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794902058828"
+ },
+ {
+  "id": "fixture-ui-cjuid",
+  "name": "Fixture UI",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T07:54:28.602Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-cjuid/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-cjuid/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794902058828"
+ },
+ {
+  "id": "fixture-chat-luong-xozku",
+  "name": "Fixture chất lượng",
+  "owned": true,
+  "draft": false,
+  "createdAt": "2026-11-17T14:42:49.665Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-xozku/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-chat-luong-xozku/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794926568485"
+ },
+ {
+  "id": "fixture-ui-xvqnd",
+  "name": "Fixture UI",
+  "owned": true,
+  "draft": true,
+  "createdAt": "2026-11-17T14:42:58.415Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-xvqnd/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/app/sets/fixture-ui-xvqnd/index.html",
+  "sourceDir": "/tmp/lawnavi-fixture-1794926568485"
+ }
+]

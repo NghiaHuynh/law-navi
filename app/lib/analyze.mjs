@@ -1,4 +1,5 @@
 // Mirror of the ask-view scoring in law-map engine.html — keep the two in sync.
+// App có thêm trường `exact` (số từ của cụm keys khớp nhất) để server xếp hạng giữa các bộ; engine một bộ không cần.
 const MARKS = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
 export function norm(s) {
   return String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(MARKS, '')
@@ -28,14 +29,17 @@ export function analyze(DATA, q, lex) {
   const says = [];
   const nq = norm(q);
   const drop = {};
+  const gloss = {};
   (lex || []).forEach(e => {
     if (!e || typeof e.p !== 'string') return;
+    if (e.dom && e.dom !== (DATA.meta && DATA.meta.dom)) return;
     let re;
     try { re = new RegExp(e.p); } catch { return; } // bỏ qua mẫu lỗi thay vì sập toàn bộ phân tích
     if (!re.test(nq)) return;
     if (says.indexOf(e.say) < 0) says.push(e.say);
     (Array.isArray(e.add) ? e.add : []).forEach(w => { if (cs.indexOf(w) < 0) cs.push(w); });
     (Array.isArray(e.drop) ? e.drop : []).forEach(w => { drop[w] = 1; });
+    if (e.gloss && typeof e.gloss === 'object') Object.assign(gloss, e.gloss);
   });
   cs = cs.filter(w => !drop[w]);
   if (!cs.length || !DATA || typeof DATA !== 'object' || !DATA.docs || typeof DATA.docs !== 'object') return null;
@@ -85,8 +89,8 @@ export function analyze(DATA, q, lex) {
     Object.keys(ds).filter(id => ds[id].s > 0 && !D(id).old)
       .sort((a, b) => ds[b].s - ds[a].s).slice(0, 4)
       .map(id => [id, 'Khớp khái niệm trong mô tả vấn đề của bạn']);
-  let note = '', curated = false;
-  let bestP = null, bestPScore = 0;
+  let note = '', curated = false, resolve = null;
+  let bestP = null, bestPScore = 0, exact = 0;
   const keyScore = p => {
     let best = 0;
     (Array.isArray(p.keys) ? p.keys : []).forEach(k => {
@@ -108,7 +112,7 @@ export function analyze(DATA, q, lex) {
       const pCov = hit / Math.max(1, pc.length);
       if (hit >= 2 && qCov >= 0.5) score = qCov * 2 + pCov + Math.min(hit, 6) * 0.05;
     }
-    if (score > bestPScore) { bestPScore = score; bestP = p; }
+    if (score > bestPScore) { bestPScore = score; bestP = p; exact = ks; }
   });
   if (bestP) {
     const pl = (Array.isArray(bestP.plan) ? bestP.plan : []).filter(x => Array.isArray(x) && D(x[0]));
@@ -118,6 +122,7 @@ export function analyze(DATA, q, lex) {
       if (Number.isFinite(cover)) pct = Math.max(pct, Math.min(100, Math.max(0, cover)));
     }
     if (bestP.note) note = bestP.note;
+    if (Array.isArray(bestP.resolve) && bestP.resolve.length) resolve = bestP.resolve;
   }
 
   const inPlan = {}; plan.forEach(p => { inPlan[p[0]] = 1; });
@@ -130,5 +135,6 @@ export function analyze(DATA, q, lex) {
     return ds[id].cov.some(w => planCov[w]);
   }).sort((a, b) => ds[b].s - ds[a].s).slice(0, 4);
   const tier = pct >= 100 ? 'Bám sát trọn vẹn' : pct >= 70 ? 'Bám sát' : pct >= 40 ? 'Định hướng phần lớn' : pct > 0 ? 'Gợi điểm khởi đầu' : 'Chưa khớp';
-  return { pct, tier, covN: cs.length - miss.length, csN: cs.length, plan, rel, miss: miss.slice(0, 4), note, curated, best, says };
+  // exact = số từ của cụm keys khớp dài nhất trong problem thắng (>0 khi bộ này có kịch bản nói đúng cụm người dùng gõ).
+  return { pct, tier, exact, covN: cs.length - miss.length, csN: cs.length, plan, rel, miss: miss.slice(0, 4), note, curated, best, says, gloss, resolve };
 }

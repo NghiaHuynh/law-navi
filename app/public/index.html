@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>try{var cs=localStorage.getItem("ln-color-scheme");if(cs==="light"||cs==="dark")document.querySelector('meta[name="color-scheme"]').content=cs;}catch(e){}</script>
 <title>LawNavi — trợ lý văn bản pháp luật</title>
 <link rel="stylesheet" href="/app.css">
+<link rel="stylesheet" href="/reel.css">
 </head>
 <body>
 <header class="top">
@@ -14,5 +17,6 @@
 <main id="main"></main>
 <div id="toast" hidden></div>
 <script src="/app.js"></script>
+<script src="/reel.js"></script>
 </body>
 </html>

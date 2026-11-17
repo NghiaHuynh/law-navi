@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<script>try{var cs=localStorage.getItem("ln-color-scheme")||new URLSearchParams(location.search).get("theme");if(cs==="light"||cs==="dark")document.querySelector('meta[name="color-scheme"]').content=cs;}catch(e){}</script>
 <title>Bản đồ văn bản xây dựng từ 01/7/2026</title>
 </head>
 <body>
@@ -17,6 +19,12 @@
       <input id="ln-q" type="search" placeholder="Tìm số văn bản, từ khóa, việc cần làm…  ( / )" autocomplete="off" aria-label="Tìm kiếm văn bản">
       <div id="ln-qres" class="ln-qres" hidden></div>
     </div>
+    <div class="ln-tools">
+      <div class="ln-persona" id="ln-persona" role="group" aria-label="Bạn là ai?"></div>
+      <button class="ln-toolbtn" id="ln-pathbtn" title="Tìm đường liên hệ giữa hai văn bản">⇄ Liên hệ</button>
+      <button class="ln-toolbtn" id="ln-helpbtn" title="Phím tắt (phím ?)">⌨</button>
+      <button class="ln-toolbtn" id="ln-theme" title="Đổi nền sáng/tối"></button>
+    </div>
     <nav class="ln-tabs" id="ln-tabs" aria-label="Chế độ xem"></nav>
   </header>
   <main id="ln-main"></main>
@@ -28,178 +36,587 @@
     <button class="ln-x" id="ln-x" aria-label="Đóng khung chi tiết">&times;</button>
     <div id="ln-dbody"></div>
   </aside>
+  <div class="ln-modal" id="ln-pathmodal" hidden>
+    <div class="ln-dialog" role="dialog" aria-label="Tìm đường liên hệ">
+      <header><h3>⇄ Tìm đường liên hệ</h3><button class="ln-x" data-closemodal aria-label="Đóng">&times;</button></header>
+      <p class="ln-lead">Chọn hai văn bản bất kỳ — hệ thống lần theo quan hệ căn cứ, thay thế, sửa đổi và nhóm hướng dẫn để chỉ ra chuỗi nối ngắn nhất giữa chúng.</p>
+      <div class="ln-pathpick">
+        <label>Từ văn bản<select id="ln-pfrom"></select></label>
+        <label>Đến văn bản<select id="ln-pto"></select></label>
+        <button class="askgo" id="ln-pgo">Tìm đường</button>
+      </div>
+      <div id="ln-pres"></div>
+    </div>
+  </div>
+  <div class="ln-modal" id="ln-helpmodal" hidden>
+    <div class="ln-dialog" role="dialog" aria-label="Phím tắt">
+      <header><h3>⌨ Phím tắt</h3><button class="ln-x" data-closemodal aria-label="Đóng">&times;</button></header>
+      <ul class="ln-keys" id="ln-keys"></ul>
+    </div>
+  </div>
 </section>
 <style>
-#ln{--paper:#f6f4ee;--ink:#263238;--muted:#6b7a80;--line:#d8d2c4;
-  font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-  color:var(--ink);background:var(--paper);display:block;min-height:100vh;padding-bottom:48px}
+/* ============================================================
+   DESIGN TOKENS — "Ink & Rail": chrome trung tính, màu nhóm văn
+   bản là màu duy nhất mang nghĩa.
+   Cấu trúc: giá trị thô light/dark -> token dự phòng theo
+   prefers-color-scheme -> light-dark() theo color-scheme (đi theo
+   <meta name="color-scheme"> nên nút đổi nền tối không cần class).
+   ============================================================ */
+:root{color-scheme:light dark}
+:root:has(> head > meta[name="color-scheme"][content="dark"]){color-scheme:dark}
+:root:has(> head > meta[name="color-scheme"][content="light"]){color-scheme:light}
+#ln{
+  /* giá trị thô */
+  --paper-l:#f6f7f6;--paper-d:#0e1213;
+  --surface-l:#fff;--surface-d:#161b1c;
+  --surface2-l:#fafbfa;--surface2-d:#1b2123;
+  --ink-l:#131a1c;--ink-d:#e9edea;
+  --muted-l:#5b6a6f;--muted-d:#9dabb0;
+  --line-l:#e4e7e4;--line-d:#272e30;
+  /* viền của control tương tác phải đạt ~3:1 với nền (WCAG 1.4.11) */
+  --linestrong-l:#7d8a85;--linestrong-d:#66736f;
+  --accent-l:#0f6b46;--accent-d:#5cc79a;
+  --accentink-l:#0b5335;--accentink-d:#8fdcb8;
+  --red-l:#c0392b;--red-d:#e0776d;
+  --amber-l:#8a5b04;--amber-d:#d9a441;
+  --blue-l:#1257a6;--blue-d:#7fb2e8;
+  /* token dùng trong bài viết */
+  --paper:var(--paper-l);--surface:var(--surface-l);--surface-2:var(--surface2-l);
+  --ink:var(--ink-l);--muted:var(--muted-l);--line:var(--line-l);--line-strong:var(--linestrong-l);
+  --accent:var(--accent-l);--accent-ink:var(--accentink-l);
+  --red:var(--red-l);--amber:var(--amber-l);--blue:var(--blue-l);
+  --r1:10px;--r2:14px;--r3:20px;
+  --sh1:0 1px 2px rgba(14,24,20,.05);
+  --sh2:0 1px 2px rgba(14,24,20,.05),0 10px 22px -14px rgba(14,24,20,.22);
+  --sh3:0 2px 8px rgba(14,24,20,.10),0 28px 64px -28px rgba(14,24,20,.36);
+  --ease:cubic-bezier(.22,.8,.24,1);
+  --f-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  /* không khai báo color-scheme ở đây: #ln phải kế thừa giá trị đã ghim từ :root để light-dark() nghe theo <meta> */
+  accent-color:var(--accent);
+  scrollbar-color:var(--line-strong) transparent;
+  font:14.5px/1.6 var(--f-ui);color:var(--ink);background:var(--paper);display:block;
+  min-height:100vh;padding-bottom:56px;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+/* Dự phòng cho trình duyệt chưa có light-dark(): vẫn theo hệ điều hành. */
+@media (prefers-color-scheme:dark){
+  #ln{--paper:var(--paper-d);--surface:var(--surface-d);--surface-2:var(--surface2-d);
+    --ink:var(--ink-d);--muted:var(--muted-d);--line:var(--line-d);--line-strong:var(--linestrong-d);
+    --accent:var(--accent-d);--accent-ink:var(--accentink-d);
+    --red:var(--red-d);--amber:var(--amber-d);--blue:var(--blue-d)}}
+/* Bản hiện đại: một bộ token tự theo color-scheme (kể cả khi bị ghim bởi <meta>). */
+@supports (color:light-dark(#fff,#000)){
+  #ln{--paper:light-dark(var(--paper-l),var(--paper-d));
+    --surface:light-dark(var(--surface-l),var(--surface-d));
+    --surface-2:light-dark(var(--surface2-l),var(--surface2-d));
+    --ink:light-dark(var(--ink-l),var(--ink-d));
+    --muted:light-dark(var(--muted-l),var(--muted-d));
+    --line:light-dark(var(--line-l),var(--line-d));
+    --line-strong:light-dark(var(--linestrong-l),var(--linestrong-d));
+    --accent:light-dark(var(--accent-l),var(--accent-d));
+    --accent-ink:light-dark(var(--accentink-l),var(--accentink-d));
+    --red:light-dark(var(--red-l),var(--red-d));
+    --amber:light-dark(var(--amber-l),var(--amber-d));
+    --blue:light-dark(var(--blue-l),var(--blue-d));
+    accent-color:light-dark(var(--accent-l),var(--accent-d));
+    scrollbar-color:light-dark(var(--linestrong-l),var(--linestrong-d)) transparent}}
+/* Nét nối của cây: trộn màu nhấn với viền, tự sáng/tối theo token. */
+#ln{--rail:color-mix(in oklab,var(--accent) 24%,var(--line-strong));
+  /* chữ trên nền đặc: nền sáng -> trắng, nền tối -> mực tối nhất (light-dark không được lồng nên dùng token thô) */
+  --on-solid:light-dark(#fff,var(--paper-d))}
 #ln *,#ln *::before,#ln *::after{box-sizing:border-box}
 #ln button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
-#ln .ln-top{position:sticky;top:0;z-index:30;background:var(--paper);border-bottom:2px solid var(--line);
-  padding:12px 22px 0;display:flex;flex-wrap:wrap;gap:10px 26px;align-items:center}
-#ln .ln-brand h1{margin:0;font-size:19px;letter-spacing:.4px;text-transform:uppercase;color:#1b5e20}
-#ln .ln-brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
-#ln .ln-searchbox{position:relative;flex:1 1 240px;max-width:420px}
-#ln #ln-q{width:100%;padding:8px 12px;border:2px solid #b9b2a2;border-radius:999px;background:#fff;font:inherit;font-size:14px}
-#ln #ln-q:focus{outline:none;border-color:#1b5e20}
-#ln .ln-qres{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:2px solid #b9b2a2;
-  border-radius:12px;box-shadow:0 10px 24px rgba(0,0,0,.14);overflow:hidden;max-height:320px;overflow-y:auto;z-index:40}
-#ln .ln-qres button{display:block;width:100%;text-align:left;padding:8px 12px;border-bottom:1px solid #eee}
+#ln :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+/* Header: thanh kính mờ dính đỉnh, hairline mảnh thay cho viền 2px. */
+#ln .ln-top{position:sticky;top:0;z-index:30;
+  background:color-mix(in oklab,var(--paper) 82%,transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);
+  border-bottom:1px solid var(--line);padding:14px 24px 0;display:flex;flex-wrap:wrap;
+  gap:12px 24px;align-items:center}
+#ln .ln-brand h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink)}
+#ln .ln-brand p{margin:3px 0 0;font-size:12.5px;color:var(--muted);letter-spacing:.01em}
+#ln .ln-searchbox{position:relative;flex:1 1 260px;max-width:440px}
+#ln #ln-q{width:100%;padding:9px 14px;border:1px solid var(--line-strong);border-radius:999px;
+  background:var(--surface);font:inherit;font-size:14px;box-shadow:var(--sh1);
+  transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+#ln #ln-q::placeholder{color:var(--muted)}
+#ln #ln-q:hover{border-color:color-mix(in oklab,var(--accent) 35%,var(--line-strong))}
+#ln #ln-q:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 18%,transparent)}
+#ln .ln-qres{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r2);box-shadow:var(--sh3);overflow:hidden;
+  max-height:340px;overflow-y:auto;z-index:40}
+#ln .ln-qres button{display:block;width:100%;text-align:left;padding:10px 14px;
+  border-bottom:1px solid var(--line);transition:background .15s var(--ease)}
 #ln .ln-qres button:last-child{border-bottom:0}
-#ln .ln-qres button:hover{background:#f1efe7}
+#ln .ln-qres button:hover{background:var(--surface-2)}
 #ln .ln-qres b{display:block;font-size:13.5px}
 #ln .ln-qres span{font-size:12px;color:var(--muted)}
-#ln .ln-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
-#ln .ln-tabs button{padding:8px 14px;border-radius:10px 10px 0 0;font-weight:600;font-size:13.5px;color:var(--muted);
-  border:2px solid transparent;border-bottom:0}
-#ln .ln-tabs button[aria-selected="true"]{color:#1b5e20;background:#fff;border-color:var(--line)}
-#ln main{padding:22px 22px 0;max-width:1500px;margin:0 auto}
-#ln .ln-h{display:flex;align-items:center;gap:10px;margin:26px 0 12px;font-size:15px;letter-spacing:.6px;
-  text-transform:uppercase;color:#bf5b16}
-#ln .ln-h::after{content:"";flex:1;border-top:2px dashed #c9b79a}
-#ln .ln-h.red{color:#b3403f}
-#ln .ln-h.red::after{border-top-color:#d8a3a2}
-#ln .ln-h.green{color:#2e7d32}
-#ln .ln-h.green::after{border-top-color:#a8c8a8}
-#ln .ln-lead{margin:4px 0 14px;font-size:14px;color:var(--muted)}
-#ln .chip{display:inline-block;padding:2px 9px;border:1.5px solid #9aa4a8;border-radius:999px;background:#fff;
-  font-size:11.5px;color:#455a64;white-space:nowrap}
-#ln .chip.hl{background:#fff3bf;border-color:#e0c341;color:#7a5c00;font-weight:600}
-#ln .chip.thay{background:#fff;border-color:#b3403f;color:#b3403f;font-weight:700;letter-spacing:.5px}
-#ln .chip.old{background:#efece4;border-color:#a49c8a;color:#6d6553;text-decoration:line-through}
-#ln .card{background:#fff;border:2px solid var(--c,#90a4ae);border-radius:12px;padding:14px 16px;
-  box-shadow:3px 4px 0 rgba(0,0,0,.06)}
-#ln .card.tint{background:var(--cbg,#fff)}
-#ln .law h2{margin:0 0 8px;font-size:20px;color:#1565c0;letter-spacing:.3px}
-#ln .law .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-#ln .chaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
-#ln .chap{background:#fff;border:1.5px solid #90a4ae;border-radius:9px;padding:8px 10px;text-align:left;width:100%}
-#ln .chap:hover{border-color:#1565c0;box-shadow:2px 2px 0 rgba(21,101,192,.25)}
-#ln .chap b{display:block;font-size:13px;color:#1565c0}
-#ln .chap span{display:block;font-size:12px;color:var(--ink);margin:2px 0 4px}
-#ln .chap .chip{font-size:10.5px;padding:1px 7px;background:#fdeccc;border-color:#e0a96d;color:#8a4b00}
-#ln .grid6{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
-#ln .grp header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-#ln .grp h4{margin:0;font-size:17px;color:var(--c)}
-#ln .grp .gsubj{font-size:12.5px;color:var(--muted)}
-#ln .grp .gmeta{font-size:12px;color:var(--muted);margin:2px 0 6px}
-#ln .grp .thay{display:flex;align-items:center;gap:6px;font-size:12.5px;margin:4px 0 6px;flex-wrap:wrap}
-#ln .gbul{margin:4px 0 8px;padding-left:18px;font-size:13px}
-#ln .gbul li{margin:2px 0}
-#ln .gbul li mark{background:#fff3bf;padding:0 2px}
+/* Tabs: pill segment có viên highlight trượt dưới tab đang chọn. */
+#ln .ln-tabs{position:relative;display:flex;gap:2px;flex-wrap:wrap;margin-left:auto;
+  padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--surface);box-shadow:var(--sh1)}
+#ln .ln-tabs::before{content:"";position:absolute;z-index:0;top:4px;bottom:4px;
+  left:var(--tb-x,4px);width:var(--tb-w,0px);border-radius:999px;
+  background:color-mix(in oklab,var(--accent) 12%,var(--surface));
+  box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--accent) 34%,transparent);
+  transition:left .38s var(--ease),width .38s var(--ease),opacity .2s;opacity:var(--tb-on,0)}
+#ln .ln-tabs button{position:relative;z-index:1;padding:7px 14px;border-radius:999px;font-weight:600;
+  font-size:13px;color:var(--muted);letter-spacing:.01em;white-space:nowrap;
+  transition:color .25s var(--ease)}
+#ln .ln-tabs button:hover{color:var(--ink)}
+#ln .ln-tabs button[aria-selected="true"]{color:var(--accent-ink)}
+#ln main{padding:24px 24px 0;max-width:1500px;margin:0 auto;animation:ln-in .34s var(--ease) both}
+@keyframes ln-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* Tiêu đề mục: kiểu display, chữ hoa sát nhau, nét kẻ mảnh tan dần (bỏ nét đứt). */
+#ln .ln-h{display:flex;align-items:center;gap:12px;margin:30px 0 12px;font-size:13px;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+#ln .ln-h::after{content:"";flex:1;height:1px;
+  background:linear-gradient(90deg,var(--line-strong),transparent)}
+#ln .ln-h.red{color:var(--red)}
+#ln .ln-h.red::after{background:linear-gradient(90deg,color-mix(in oklab,var(--red) 45%,transparent),transparent)}
+#ln .ln-h.green{color:var(--accent-ink)}
+#ln .ln-h.green::after{background:linear-gradient(90deg,color-mix(in oklab,var(--accent) 45%,transparent),transparent)}
+#ln .ln-lead{margin:4px 0 16px;font-size:14px;color:var(--muted)}
+/* Chip: số văn bản/biên bản = mono, tabular figures. */
+#ln .chip{display:inline-block;padding:2px 9px;border:1px solid var(--line-strong);border-radius:999px;
+  background:var(--surface);font:12px/1.5 var(--f-mono);font-variant-numeric:tabular-nums;
+  color:var(--muted);white-space:nowrap}
+#ln .chip.hl{background:color-mix(in oklab,var(--accent) 12%,var(--surface));
+  border-color:color-mix(in oklab,var(--accent) 45%,transparent);color:var(--accent-ink);font-weight:600}
+#ln .chip.old{background:var(--surface-2);border-color:var(--line);color:var(--muted);
+  text-decoration:line-through}
+#ln #ln-askres .chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 16px}
+#ln #ln-askres .chips .chip{white-space:normal;line-height:1.45}
+/* Thẻ nội dung: hairline + bóng lớp, hover nổi 2px. */
+#ln .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r2);padding:16px 18px;
+  box-shadow:var(--sh1);transition:box-shadow .25s var(--ease),transform .25s var(--ease)}
+#ln .card.tint{background:color-mix(in oklab,var(--c,#90a4ae) 7%,var(--surface))}
+#ln .chaps{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+#ln .chap{background:var(--surface);border:1px solid var(--line);border-radius:var(--r1);padding:10px 12px;
+  text-align:left;width:100%;box-shadow:var(--sh1);transition:transform .2s var(--ease),border-color .2s var(--ease)}
+#ln .chap:hover{border-color:color-mix(in oklab,var(--blue) 45%,var(--line));transform:translateY(-2px)}
+#ln .chap b{display:block;font-size:13px;color:var(--blue)}
+#ln .chap span{display:block;font-size:12px;color:var(--ink);margin:3px 0 5px}
+#ln .chap .chip{font-size:10.5px;padding:1px 7px;background:color-mix(in oklab,var(--amber) 14%,var(--surface));
+  border-color:color-mix(in oklab,var(--amber) 40%,transparent);color:var(--amber)}
 #ln .kids{display:grid;gap:6px}
-#ln .kid{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid var(--c);border-radius:9px;
-  padding:7px 10px}
-#ln .kid:hover{box-shadow:2px 2px 0 rgba(0,0,0,.15)}
-#ln .kid b{font-size:13px;color:var(--c)}
+#ln .kid{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r1);padding:9px 12px;box-shadow:var(--sh1);
+  transition:transform .2s var(--ease),border-color .2s var(--ease)}
+#ln .kid:hover{border-color:color-mix(in oklab,var(--c) 50%,var(--line));transform:translateY(-1px)}
+#ln .kid b{font-size:13px;color:var(--c);font-family:var(--f-mono)}
 #ln .kid i{font-style:normal;font-size:11px;color:var(--muted);margin-left:6px}
 #ln .kid span{display:block;font-size:12px;color:var(--ink)}
-#ln .kid mark{background:#fff3bf;padding:0 2px}
-#ln .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+#ln .kid mark{background:color-mix(in oklab,var(--accent) 20%,var(--surface));color:var(--ink);
+  border-radius:3px;padding:0 2px}
+#ln .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 #ln .rel{cursor:pointer;text-align:left;width:100%}
-#ln .rel:hover{box-shadow:3px 4px 0 rgba(0,0,0,.18)}
+#ln .rel:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
 #ln .rel header{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
-#ln .rel b{font-size:14.5px;color:var(--c)}
+#ln .rel b{font-size:14px;color:var(--c);font-family:var(--f-mono)}
 #ln .rel p{margin:6px 0 0;font-size:12.5px}
-#ln .rel p mark{background:#fff3bf;padding:0 2px}
-#ln .lookup{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fff;border:2px dashed #c9b79a;
-  border-radius:12px;padding:12px 14px;margin-bottom:16px}
-#ln .lookup label{font-size:13.5px;font-weight:600}
-#ln .lookup select{font:inherit;font-size:14px;padding:7px 10px;border:2px solid #b9b2a2;border-radius:9px;background:#fff;max-width:100%}
+#ln .rel p mark{background:color-mix(in oklab,var(--accent) 20%,var(--surface));color:var(--ink);
+  border-radius:3px;padding:0 2px}
+/* ============================================================
+   CÂY QUAN HỆ (tab Bản đồ): ô gốc đỉnh, bus + nhánh khuỷu xuống
+   hàng ô con, ô cháu treo dọc. Nét nối 1,5px màu --rail.
+   ============================================================ */
+#ln .tree{list-style:none;margin:0;padding:0}
+#ln figure.orgf{margin:0 0 22px}
+#ln .orgcap{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-size:12.5px;color:var(--muted);margin:0 0 8px}
+#ln .orgcap b{font-size:14px;color:var(--c,var(--ink));font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+#ln .orgfit{margin-inline-start:auto;font-size:11.5px;font-weight:600;color:var(--muted);background:var(--surface);
+  border:1px solid var(--line-strong);border-radius:999px;padding:5px 12px;min-block-size:26px;box-shadow:var(--sh1);
+  transition:color .2s var(--ease),border-color .2s var(--ease),background .2s var(--ease)}
+#ln .orgfit:hover{color:var(--ink);border-color:var(--line-strong)}
+#ln .orgfit[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+#ln .orgfit:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+#ln .orgfit[hidden]{display:none}
+#ln .orghint{flex:1 1 100%;font-size:11.5px;color:var(--muted)}
+#ln .orgscroll{overflow-x:auto;overscroll-behavior-x:contain;padding-block:2px 10px;scrollbar-width:thin}
+#ln .orgscroll>.org{inline-size:max-content;margin-inline:auto}
+#ln .orgscroll.flat>.org{inline-size:auto}
+/* Mọi hàng/cột của cây tự tính bề rộng theo nội dung — khung không co nó lại. */
+#ln .orgscroll .tree{inline-size:max-content;margin-inline:auto;position:relative}
+/* Cấp 1: hàng ngang — thanh bus + nhánh rủ từ ô cha xuống từng ô con. */
+#ln .orgscroll .tree.row{display:flex;justify-content:safe center;align-items:flex-start;padding-block-start:26px}
+#ln .orgscroll .tree.row.flat{flex-wrap:wrap;row-gap:12px;padding-block-start:0;inline-size:auto}
+#ln .orgscroll .tree.row[role="group"]::before{content:"";position:absolute;inset-block-start:0;inset-inline-start:50%;
+  block-size:26px;border-inline-start:1.5px solid var(--rail)}
+#ln .orgscroll .tree.row>.tli{display:flex;flex-direction:column;align-items:center;flex:0 0 max-content;
+  position:relative;padding-block-start:26px;padding-inline:5px}
+#ln .orgscroll .tree.row>.tli.tkid{padding-block-start:0}
+#ln .orgscroll .tree.row>.tli.tkid::before,#ln .orgscroll .tree.row>.tli.tkid::after{content:"";position:absolute;
+  inset-block-start:0;block-size:26px;inline-size:50%;border-block-start:1.5px solid var(--rail)}
+#ln .orgscroll .tree.row>.tli.tkid::before{inset-inline-end:50%}
+#ln .orgscroll .tree.row>.tli.tkid::after{inset-inline-start:50%;border-inline-start:1.5px solid var(--rail)}
+#ln .orgscroll .tree.row>.tli.tkid:first-child::before{border-block-start:0}
+#ln .orgscroll .tree.row>.tli.tkid:first-child::after{border-start-start-radius:10px}
+#ln .orgscroll .tree.row>.tli.tkid:last-child::after{border-block-start:0;border-inline-start:0}
+#ln .orgscroll .tree.row>.tli.tkid:last-child::before{border-inline-end:1.5px solid var(--rail);border-start-end-radius:10px}
+#ln .orgscroll .tree.row>.tli.tkid:only-child::before{display:none}
+#ln .orgscroll .tree.row>.tli.tkid:only-child::after{border-block-start:0;inline-size:0}
+#ln .orgscroll .tree.row>.tli.tkid>.tnode::before{content:"";position:absolute;inset-block-start:-11px;inset-inline-start:50%;
+  inline-size:8px;block-size:8px;border-block-end:1.5px solid var(--rail);border-inline-end:1.5px solid var(--rail);
+  transform:translateX(-50%) rotate(45deg)}
+/* Cấp >=2: cột dọc treo dưới ô cha — ray trái, mỗi ô một nhánh rủ. */
+#ln .orgscroll .tree.stack{display:block;padding-block-start:0}
+#ln .orgscroll .tree.stack::after{content:"";position:absolute;inset-block-start:0;inset-inline-start:0;
+  inline-size:calc(50% + 9px);block-size:16px;border-block-end:1.5px solid var(--rail);border-inline-end:1.5px solid var(--rail)}
+#ln .orgscroll .tree.stack>.tli{position:relative;padding-inline-start:18px;margin-block-start:9px}
+#ln .orgscroll .tree.stack>.tli::after{content:"";position:absolute;inset-block-start:-9px;block-size:24px;
+  inset-inline-start:0;border-inline-start:1.5px solid var(--rail)}
+#ln .orgscroll .tree.stack>.tli::before{content:"";position:absolute;inset-block-start:15px;inset-inline-start:0;
+  inline-size:18px;block-size:0;border-block-start:1.5px solid var(--rail)}
+#ln .orgscroll .tree.stack>.tli:first-child::after{inset-block-start:16px;block-size:8px}
+/* Ô văn bản trong cây: nền tint từ màu nhóm, hairline đậm dần theo vai. */
+#ln .tnode{background:color-mix(in oklab,var(--c,#90a4ae) 6%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--c,#90a4ae) 42%,var(--line));border-radius:var(--r2);
+  padding:11px 12px 12px;box-shadow:var(--sh1);inline-size:182px;min-inline-size:0;position:relative;text-align:start;
+  transition:box-shadow .25s var(--ease),transform .25s var(--ease)}
+#ln .tnode:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+#ln .tnode.root{inline-size:240px;border-width:1.5px;background:var(--surface);
+  border-color:color-mix(in oklab,var(--c,#90a4ae) 55%,var(--line));padding-block:13px 12px;box-shadow:var(--sh2)}
+#ln .tnode.isold{background:var(--surface-2);border-style:dashed;border-color:var(--line-strong);box-shadow:none}
+#ln .tnode.ctx{background:color-mix(in oklab,var(--muted) 8%,var(--surface));border-color:var(--line-strong);
+  box-shadow:none}
+#ln .tnode.hit{border-width:2px;border-color:color-mix(in oklab,var(--c,#90a4ae) 78%,var(--line))}
+#ln .tbody{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 7px;width:100%;text-align:start;
+  background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;cursor:pointer;
+  min-inline-size:24px;min-block-size:24px;border-radius:8px}
+#ln .tbody:hover .tcode{text-decoration:underline;text-underline-offset:2px}
+#ln .tbody:focus-visible{outline:2px solid var(--c,var(--accent));outline-offset:3px}
+#ln .tnum{flex:0 0 auto;display:inline-grid;place-items:center;inline-size:20px;block-size:20px;border-radius:50%;
+  background:var(--c,#546e7a);color:#fff;font:600 11px/1 var(--f-mono);font-variant-numeric:tabular-nums}
+#ln .ttype{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--c,#546e7a);
+  background:color-mix(in oklab,var(--c,#546e7a) 14%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--c,#546e7a) 30%,transparent);
+  border-radius:999px;padding:2px 8px;flex:0 0 auto;font-weight:700}
+#ln .tnode.isold .ttype{color:var(--muted);background:var(--surface-2);border-color:var(--line)}
+#ln .tcode{font:600 13.5px/1.35 var(--f-mono);color:var(--c,#546e7a);min-inline-size:0;overflow-wrap:anywhere;
+  font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+#ln .tnode.isold .tcode{color:var(--muted);text-decoration:line-through}
+#ln .tmeta{flex:1 1 100%;font-size:11px;color:var(--muted)}
+#ln .tsum{flex:1 1 100%;font-size:12px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:clip}
+#ln .trel{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:clip;
+  margin-block-start:6px;font-size:10.5px;font-style:italic;color:var(--muted)}
+#ln .tnone{display:block;margin-block-start:6px;padding-block-start:5px;border-block-start:1px dashed var(--line-strong);
+  font-size:10.5px;color:var(--muted)}
+#ln .tfix{display:flex;flex-wrap:wrap;gap:5px;align-items:center;font-size:10.5px;color:var(--muted);margin-block-start:7px}
+#ln .tfix button{border:1px solid color-mix(in oklab,var(--red) 55%,transparent);border-radius:999px;
+  padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--red);
+  background:color-mix(in oklab,var(--red) 8%,var(--surface));min-block-size:26px;
+  transition:background .2s var(--ease)}
+#ln .tfix button:hover{background:color-mix(in oklab,var(--red) 16%,var(--surface))}
+#ln .tfix button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+#ln .chaps-h{margin:12px 0 6px;font-size:12.5px;color:var(--muted)}
+#ln .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11.5px;color:var(--muted);margin:0 0 16px}
+#ln .legend i{font-style:normal;border:1px solid var(--line-strong);border-radius:999px;padding:3px 10px;
+  background:var(--surface)}
+#ln .lookup{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r2);padding:14px 16px;margin-bottom:18px;box-shadow:var(--sh1)}
+#ln .lookup label{font-size:13px;font-weight:600;color:var(--muted)}
+#ln .lookup select{font:inherit;font-size:14px;padding:8px 12px;border:1px solid var(--line-strong);
+  border-radius:var(--r1);background:var(--surface);color:var(--ink);max-width:100%}
 #ln .pairs{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
-#ln .pair{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;background:#fff;
-  border:2px solid var(--line);border-radius:12px;padding:12px}
-#ln .pair .pold,#ln .pair .pnew{border-radius:9px;padding:8px 10px;border:1.5px solid #a49c8a;background:#f4f1e9}
-#ln .pair .pnew{border-color:var(--c);background:var(--cbg);cursor:pointer;text-align:left;width:100%}
-#ln .pair .pnew:hover{box-shadow:2px 2px 0 rgba(0,0,0,.15)}
-#ln .pair b{display:block;font-size:13.5px}
-#ln .pair .pold b{color:#6d6553;text-decoration:line-through}
+#ln .pair{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r2);padding:14px;box-shadow:var(--sh1)}
+#ln .pair .pold,#ln .pair .pnew{border-radius:var(--r1);padding:10px 12px;border:1px solid var(--line);
+  background:var(--surface-2)}
+#ln .pair .pnew{border-color:color-mix(in oklab,var(--c) 45%,var(--line));
+  background:color-mix(in oklab,var(--c) 8%,var(--surface));cursor:pointer;text-align:left;width:100%}
+#ln .pair .pnew:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+#ln .pair b{display:block;font-size:13px;font-family:var(--f-mono)}
+#ln .pair .pold b{color:var(--muted);text-decoration:line-through}
 #ln .pair .pnew b{color:var(--c)}
 #ln .pair span{display:block;font-size:11.5px;color:var(--muted)}
-#ln .pair .parrow{font-size:20px;font-weight:700;color:#b3403f}
+#ln .pair .parrow{font-size:18px;font-weight:700;color:var(--red)}
 #ln .pair .pnote{grid-column:1/-1;margin:2px 0 0;font-size:11.5px;color:var(--muted)}
 #ln .tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-#ln .tbtn{background:#fff;border:2px solid #b9b2a2;border-radius:11px;padding:10px 12px;text-align:left;
-  font-size:13.5px;font-weight:600}
-#ln .tbtn:hover{border-color:#1b5e20}
-#ln .tbtn[aria-pressed="true"]{border-color:#1b5e20;background:#eaf3ea;box-shadow:2px 3px 0 rgba(27,94,32,.25)}
-#ln .tbtn span{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px}
-#ln .tres{margin-top:16px;display:grid;gap:8px}
-#ln .trow{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;background:#fff;
-  border:2px solid var(--c,#90a4ae);border-left-width:8px;border-radius:11px;padding:10px 14px}
+#ln .tbtn{background:var(--surface);border:1px solid var(--line);border-radius:var(--r1);padding:11px 13px;
+  text-align:left;font-size:13.5px;font-weight:600;box-shadow:var(--sh1);
+  transition:border-color .2s var(--ease),transform .2s var(--ease)}
+#ln .tbtn:hover{border-color:color-mix(in oklab,var(--accent) 45%,var(--line));transform:translateY(-1px)}
+#ln .tbtn[aria-pressed="true"]{border-color:var(--accent);
+  background:color-mix(in oklab,var(--accent) 10%,var(--surface));color:var(--accent-ink)}
+#ln .tbtn span{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:3px}
+#ln .tres{margin-top:18px;display:grid;gap:8px}
+#ln .trow{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;background:var(--surface);
+  border:1px solid var(--line);border-left:3px solid var(--c,#90a4ae);border-radius:var(--r1);
+  padding:12px 15px;box-shadow:var(--sh1)}
 #ln .trow .n{width:28px;height:28px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;
-  display:flex;align-items:center;justify-content:center;font-size:14px}
-#ln .trow b{font-size:14.5px;color:var(--c)}
-#ln .trow p{margin:2px 0 0;font-size:12.5px;color:var(--ink)}
-#ln .trow .open{border:1.5px solid var(--c);color:var(--c);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
-#ln .trow .open:hover{background:var(--cbg)}
-#ln .twhy{background:#fff3bf;border:1.5px solid #e0c341;border-radius:11px;padding:10px 14px;font-size:13px;margin-bottom:4px}
-#ln .tl{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 14px}
-#ln .tlstep{flex:0 0 230px;background:var(--cbg,#fff);border:2px solid var(--c,#90a4ae);border-radius:11px;
-  padding:10px 12px;position:relative}
-#ln .tlstep b{display:block;font-size:14px;color:var(--c)}
-#ln .tlstep span{display:block;font-size:12.5px;margin-top:3px}
-#ln .tlstep:not(:last-child)::after{content:"→";position:absolute;right:-16px;top:42%;font-size:18px;font-weight:700;color:#8a8371}
+  display:flex;align-items:center;justify-content:center;font:600 13px/1 var(--f-mono);
+  font-variant-numeric:tabular-nums}
+#ln .trow b{font-size:14px;color:var(--c);font-family:var(--f-mono)}
+#ln .trow p{margin:3px 0 0;font-size:12.5px;color:var(--ink)}
+#ln .trow .open{border:1px solid color-mix(in oklab,var(--c) 50%,var(--line));color:var(--c);border-radius:999px;
+  padding:5px 13px;font-size:12px;font-weight:600;background:var(--surface);transition:background .2s var(--ease)}
+#ln .trow .open:hover{background:color-mix(in oklab,var(--c) 12%,var(--surface))}
+#ln .twhy{background:color-mix(in oklab,var(--amber) 12%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--amber) 35%,transparent);border-radius:var(--r1);
+  padding:11px 14px;font-size:13px;margin-bottom:4px;color:var(--ink)}
+#ln .tl{display:flex;gap:10px;overflow-x:auto;padding:6px 2px 16px;overscroll-behavior-x:contain;scrollbar-width:thin}
+#ln .tlstep{flex:0 0 236px;background:color-mix(in oklab,var(--c,#90a4ae) 6%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--c,#90a4ae) 40%,var(--line));border-radius:var(--r2);
+  padding:12px 14px;position:relative;box-shadow:var(--sh1)}
+#ln .tlstep b{display:block;font-size:13.5px;color:var(--c);font-family:var(--f-mono)}
+#ln .tlstep span{display:block;font-size:12.5px;margin-top:4px}
+#ln .tlstep:not(:last-child)::after{content:"→";position:absolute;right:-15px;top:44%;font-size:16px;font-weight:700;
+  color:var(--muted)}
 #ln .rp{display:grid;gap:10px;max-width:900px}
-#ln .rpstep{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center;background:var(--cbg,#fff);
-  border:2px solid var(--c,#90a4ae);border-radius:12px;padding:12px 16px;cursor:pointer;text-align:left;width:100%}
-#ln .rpstep:hover{box-shadow:3px 4px 0 rgba(0,0,0,.15)}
+#ln .rpstep{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:center;
+  background:color-mix(in oklab,var(--c,#90a4ae) 6%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--c,#90a4ae) 42%,var(--line));border-radius:var(--r2);
+  padding:13px 17px;cursor:pointer;text-align:left;width:100%;box-shadow:var(--sh1);
+  transition:box-shadow .25s var(--ease),transform .25s var(--ease)}
+#ln .rpstep:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
 #ln .rpstep .n{width:34px;height:34px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;
-  display:flex;align-items:center;justify-content:center;font-size:16px}
-#ln .rpstep b{font-size:15.5px;color:var(--c)}
-#ln .rpstep span{display:block;font-size:13px;margin-top:2px}
-#ln .quote{margin:22px auto 0;max-width:760px;text-align:center;font-size:16px;font-style:italic;color:#1b5e20;
-  border-top:2px dashed #a8c8a8;padding-top:16px}
-#ln .ln-foot{max-width:1500px;margin:30px auto 0;padding:0 22px;font-size:11.5px;color:var(--muted)}
-#ln .ln-sources{margin-top:6px}#ln .ln-sources a{color:#1565c0;text-decoration:none}#ln .ln-sources a:hover{text-decoration:underline}
-#ln .ln-drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);background:#fff;z-index:50;
-  border-left:3px solid #1b5e20;box-shadow:-12px 0 30px rgba(0,0,0,.2);overflow-y:auto;padding:18px 20px 40px}
+  display:flex;align-items:center;justify-content:center;font:600 15px/1 var(--f-mono);
+  font-variant-numeric:tabular-nums}
+#ln .rpstep b{font-size:14.5px;color:var(--c);font-family:var(--f-mono)}
+#ln .rpstep span{display:block;font-size:13px;margin-top:3px}
+#ln .quote{margin:26px auto 0;max-width:760px;text-align:center;font-size:16px;line-height:1.6;font-style:italic;
+  color:var(--accent-ink);border-top:1px solid var(--line);padding-top:18px}
+#ln .ln-foot{max-width:1500px;margin:34px auto 0;padding:0 24px;font-size:11.5px;color:var(--muted)}
+#ln .ln-sources{margin-top:6px}
+#ln .ln-sources a{color:var(--blue);text-decoration:none;border-bottom:1px solid transparent}
+#ln .ln-sources a:hover{border-bottom-color:currentColor}
+/* Ngăn chi tiết: sheet trượt từ phải, bo góc trái, nền mờ sau lưng. */
+#ln .ln-drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,100%);background:var(--surface);z-index:50;
+  border-left:1px solid var(--line);border-radius:var(--r3) 0 0 var(--r3);box-shadow:var(--sh3);
+  overflow-y:auto;padding:18px 22px 44px;animation:ln-slide .3s var(--ease) both}
+@keyframes ln-slide{from{transform:translateX(24px);opacity:.4}to{transform:none;opacity:1}}
 #ln .ln-x{position:sticky;top:0;float:right;margin-left:8px;width:32px;height:32px;border-radius:50%;
-  background:#f1efe7;font-size:18px;line-height:1;border:1.5px solid #b9b2a2}
-#ln .ln-x:hover{background:#e4e0d4}
-#ln .d-code{font-size:20px;font-weight:700;color:var(--c,#263238);margin:4px 0 2px;padding-right:36px}
-#ln .d-type{font-size:12px;color:var(--muted);margin-bottom:10px}
-#ln .d-sec{margin:14px 0 0;font-size:12px;letter-spacing:.6px;text-transform:uppercase;color:#8a8371}
+  background:var(--surface-2);font-size:18px;line-height:1;border:1px solid var(--line-strong);color:var(--muted);
+  transition:background .2s var(--ease),color .2s var(--ease)}
+#ln .ln-x:hover{background:var(--line);color:var(--ink)}
+#ln .d-code{font:700 19px/1.3 var(--f-mono);color:var(--c,var(--ink));margin:4px 0 2px;padding-right:36px;
+  letter-spacing:-.01em}
+#ln .d-type{font-size:12px;color:var(--muted);margin-bottom:12px}
+#ln .d-sec{margin:16px 0 0;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 #ln .d-body{font-size:13.5px;margin:6px 0 0}
 #ln .d-body ul{margin:6px 0;padding-left:18px}
 #ln .d-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-#ln .d-links button{border:1.5px solid var(--c,#607d8b);color:var(--c,#455a64);border-radius:999px;
-  padding:3px 11px;font-size:12px;font-weight:600;background:var(--cbg,#fff)}
-#ln .d-links button:hover{box-shadow:1px 2px 0 rgba(0,0,0,.2)}
-#ln .d-links button.oldlink{text-decoration:line-through;color:#6d6553;border-color:#a49c8a;background:#f4f1e9}
-#ln .askbox{background:#fff;border:2px solid #1b5e20;border-radius:14px;padding:16px;box-shadow:3px 4px 0 rgba(0,0,0,.06)}
-#ln .askbox textarea{width:100%;min-height:84px;border:2px solid #b9b2a2;border-radius:10px;padding:10px 12px;
-  font:inherit;font-size:14.5px;resize:vertical;background:#fffdf8}
-#ln .askbox textarea:focus{outline:none;border-color:#1b5e20}
-#ln .askbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
-#ln .askgo{background:#1b5e20;color:#fff;font-weight:700;padding:9px 20px;border-radius:999px}
-#ln .askgo:hover{background:#14471a}
-#ln .asksample{border:1.5px dashed #9aa4a8;border-radius:999px;padding:4px 12px;font-size:12.5px;color:#455a64}
-#ln .asksample:hover{background:#f1efe7}
-#ln .score{display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin:18px 0 4px}
-#ln .pct{font-size:46px;font-weight:800;color:#1b5e20;line-height:1}
+#ln .d-links button{border:1px solid color-mix(in oklab,var(--c,#607d8b) 45%,var(--line));color:var(--c,#455a64);
+  border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600;
+  background:color-mix(in oklab,var(--c,#607d8b) 8%,var(--surface));transition:box-shadow .2s var(--ease)}
+#ln .d-links button:hover{box-shadow:var(--sh1)}
+#ln .d-links button.oldlink{text-decoration:line-through;color:var(--muted);border-color:var(--line);
+  background:var(--surface-2)}
+#ln .askbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);padding:18px;
+  box-shadow:var(--sh2)}
+#ln .askbox textarea{width:100%;min-height:88px;border:1px solid var(--line-strong);border-radius:var(--r2);
+  padding:12px 14px;font:inherit;font-size:14.5px;line-height:1.6;resize:vertical;background:var(--surface-2);
+  color:var(--ink);transition:border-color .2s var(--ease),box-shadow .2s var(--ease)}
+#ln .askbox textarea:focus{outline:none;border-color:var(--accent);
+  box-shadow:0 0 0 3px color-mix(in oklab,var(--accent) 18%,transparent)}
+#ln .askbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+#ln .askgo{background:var(--accent);color:var(--on-solid);font-weight:650;padding:10px 22px;border-radius:999px;
+  box-shadow:var(--sh1);transition:background .2s var(--ease),transform .15s var(--ease)}
+#ln .askgo:hover{background:var(--accent-ink)}
+#ln .askgo:active{transform:scale(.98)}
+#ln .asksample{border:1px dashed var(--line-strong);border-radius:999px;padding:5px 13px;font-size:12.5px;
+  color:var(--muted);transition:border-color .2s var(--ease),color .2s var(--ease)}
+#ln .asksample:hover{border-color:var(--accent);color:var(--accent-ink)}
+#ln .score{display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin:20px 0 4px}
+#ln .pct{font:800 44px/1 var(--f-ui);color:var(--accent-ink);line-height:1;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em}
 #ln .pct small{font-size:16px;font-weight:700;color:var(--muted)}
 #ln .scoretxt{max-width:680px;font-size:14px;color:var(--muted)}
-#ln .miss{margin:6px 0 0;padding-left:18px;font-size:13.5px;color:#8a4b00}
-#ln .askwarn{margin-top:16px;font-size:12.5px;color:var(--muted);border-top:2px dashed #c9b79a;padding-top:10px}
+#ln .missjump{color:var(--red);font-weight:700;text-decoration:underline;text-underline-offset:2px}
+#ln .ln-fixcard{margin:20px 0 6px;border:1px solid color-mix(in oklab,var(--red) 40%,var(--line));
+  border-left:3px solid var(--red);border-radius:var(--r2);
+  background:linear-gradient(135deg,color-mix(in oklab,var(--red) 7%,var(--surface)),
+    color-mix(in oklab,var(--amber) 8%,var(--surface)));padding:18px 20px;box-shadow:var(--sh2)}
+#ln .fxhead{display:flex;gap:12px;align-items:flex-start}
+#ln .fxicon{flex:0 0 auto;width:34px;height:34px;border-radius:50%;background:var(--red);color:var(--on-solid);font-weight:800;
+  font-size:19px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh1)}
+#ln .fxttl b{display:block;font-size:15.5px;color:var(--red);line-height:1.35}
+#ln .fxttl span{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+#ln .fxwords{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+#ln .fxword{flex:1 1 240px;background:var(--surface);border:1px dashed color-mix(in oklab,var(--red) 45%,transparent);
+  border-radius:var(--r1);padding:10px 13px;font-size:13px}
+#ln .fxword b{color:var(--red);font-size:14px;font-family:var(--f-mono)}
+#ln .fxword span{display:block;color:var(--muted);margin-top:3px}
+#ln .fxsteps{margin:14px 0 0;padding:0;list-style:none;counter-reset:fx}
+#ln .fxsteps li{counter-increment:fx;position:relative;padding:12px 14px 12px 50px;background:var(--surface);
+  border-radius:var(--r1);margin-top:8px;border:1px solid var(--line);font-size:13px;box-shadow:var(--sh1)}
+#ln .fxsteps li::before{content:counter(fx);position:absolute;left:13px;top:12px;width:25px;height:25px;
+  border-radius:50%;background:var(--red);color:var(--on-solid);font-weight:700;font-size:12.5px;font-family:var(--f-mono);
+  display:flex;align-items:center;justify-content:center}
+#ln .fxsteps b{display:block;font-size:13.5px;color:var(--ink)}
+#ln .fxsteps li>span{display:block;color:var(--muted);margin-top:3px}
+#ln .fxlinks{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+#ln .fxlinks a{font-size:12px;font-weight:600;color:var(--blue);
+  background:color-mix(in oklab,var(--blue) 10%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--blue) 32%,transparent);border-radius:999px;padding:4px 11px;
+  text-decoration:none}
+#ln .fxlinks a:hover{background:color-mix(in oklab,var(--blue) 18%,var(--surface))}
+#ln .fxnote{margin:14px 0 0;font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+#ln .askwarn{margin-top:18px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+#ln .ln-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#ln .ln-persona{display:flex;align-items:center;gap:3px;background:var(--surface);border:1px solid var(--line);
+  border-radius:999px;padding:4px 10px;box-shadow:var(--sh1)}
+#ln .ln-plabel{font-size:11.5px;color:var(--muted);font-weight:600;margin-right:4px;white-space:nowrap}
+#ln .ln-persona button{font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;color:var(--muted);
+  white-space:nowrap;transition:color .2s var(--ease),background .2s var(--ease)}
+#ln .ln-persona button:hover{color:var(--ink)}
+#ln .ln-persona button[aria-pressed="true"]{background:var(--accent);color:var(--on-solid)}
+#ln .ln-toolbtn{border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:6px 13px;
+  font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;box-shadow:var(--sh1);
+  transition:color .2s var(--ease),border-color .2s var(--ease)}
+#ln .ln-toolbtn:hover{color:var(--accent-ink);border-color:color-mix(in oklab,var(--accent) 40%,var(--line))}
+#ln .ln-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;border:0}
+#ln #ln-theme{min-inline-size:38px;text-align:center}
+#ln .ln-modal{position:fixed;inset:0;z-index:60;background:rgba(10,18,16,.45);display:flex;align-items:center;
+  justify-content:center;padding:18px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#ln .ln-modal[hidden]{display:none}
+#ln .ln-dialog{background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);max-width:660px;
+  width:100%;max-height:84vh;overflow-y:auto;padding:20px 22px;box-shadow:var(--sh3);
+  animation:ln-pop .28s var(--ease) both}
+@keyframes ln-pop{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+#ln .ln-dialog header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+#ln .ln-dialog h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;color:var(--ink)}
+#ln .ln-dialog .ln-x{position:static;float:none;flex:0 0 32px}
+#ln .ln-pathpick{display:grid;gap:10px;margin:14px 0}
+#ln .ln-pathpick label{display:grid;gap:5px;font-size:12px;font-weight:600;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em}
+#ln .ln-pathpick select{font:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line-strong);
+  border-radius:var(--r1);background:var(--surface);color:var(--ink);width:100%}
+#ln .ln-chain{display:grid;gap:4px;margin-top:10px}
+#ln .pnode{display:flex;gap:10px;align-items:center;text-align:left;
+  background:color-mix(in oklab,var(--c,#90a4ae) 6%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--c,#90a4ae) 40%,var(--line));border-radius:var(--r1);
+  padding:10px 13px;width:100%;box-shadow:var(--sh1);transition:transform .2s var(--ease)}
+#ln .pnode:hover{transform:translateY(-1px)}
+#ln .pnode .n{flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;
+  display:flex;align-items:center;justify-content:center;font:600 12px/1 var(--f-mono)}
+#ln .pnode b{display:block;font-size:13px;color:var(--c);font-family:var(--f-mono)}
+#ln .pnode i{font-style:normal;display:block;font-size:11.5px;color:var(--muted)}
+#ln .ln-edge{text-align:center;font-size:11.5px;color:var(--muted);font-weight:600;padding:2px 0}
+#ln .ln-edge::before{content:"↓ ";color:var(--red)}
+#ln .ln-keys{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+#ln .ln-keys li{display:flex;gap:12px;align-items:baseline;font-size:13.5px}
+#ln .ln-keys kbd{flex:0 0 96px;background:var(--surface-2);border:1px solid var(--line-strong);
+  border-bottom-width:2px;border-radius:7px;padding:3px 9px;
+  font:600 12px/1.6 var(--f-mono);text-align:center;color:var(--ink)}
+#ln .tourstart{margin:6px 0 18px}
+#ln .tourhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+#ln .ln-tourexit{font-size:12.5px;color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+#ln .tourbar{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-bottom:16px}
+#ln .tourbar div{height:100%;background:var(--accent);border-radius:99px;transition:width .35s var(--ease)}
+#ln .tourcard{max-width:860px;padding:20px 22px}
+#ln .tourcard h2{margin:0 0 8px;font-size:20px;font-weight:700;letter-spacing:-.015em;color:var(--ink)}
+#ln .tourtip{background:color-mix(in oklab,var(--amber) 12%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--amber) 32%,transparent);border-radius:var(--r1);
+  padding:10px 13px;font-size:13px;margin:14px 0;color:var(--ink)}
+#ln .tourkids{margin-top:6px}
+#ln .tourdots{display:flex;justify-content:center;gap:7px;margin:18px 0 10px}
+#ln .tourdots button{width:10px;height:10px;border-radius:50%;background:var(--surface);
+  border:1px solid var(--line-strong);transition:background .2s var(--ease),transform .2s var(--ease)}
+#ln .tourdots button.on{background:var(--accent);border-color:var(--accent);transform:scale(1.15)}
+#ln .tourbtns{display:flex;gap:10px;max-width:860px}
+#ln .tourbtns button{flex:1;padding:10px 14px;border-radius:999px;font-weight:600;font-size:13.5px;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);
+  transition:border-color .2s var(--ease),color .2s var(--ease)}
+#ln .tourbtns button:hover:not(:disabled){border-color:var(--accent);color:var(--accent-ink)}
+#ln .tourbtns button:disabled{opacity:.4;cursor:not-allowed}
+#ln .tourbtns button.askgo{border-color:var(--accent);background:var(--accent);color:var(--on-solid)}
+#ln .tourbtns button.askgo:hover{background:var(--accent-ink);color:var(--on-solid)}
+#ln .ln-hint{display:flex;gap:10px;align-items:center;
+  background:color-mix(in oklab,var(--accent) 8%,var(--surface));
+  border:1px solid color-mix(in oklab,var(--accent) 30%,transparent);border-radius:var(--r2);
+  padding:11px 15px;font-size:13px;margin-bottom:16px;color:var(--ink)}
+#ln .ln-hint button{margin-left:auto;font-size:18px;line-height:1;color:var(--muted);flex:0 0 auto}
+#ln .ln-hint button:hover{color:var(--ink)}
+#ln .ln-route{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:14px;
+  padding:13px 16px;border:1px solid color-mix(in oklab,var(--blue) 35%,var(--line));
+  background:color-mix(in oklab,var(--blue) 7%,var(--surface));border-radius:var(--r2);font-size:13.5px}
+#ln .ln-route a.askgo{flex:0 0 auto;display:inline-block;text-decoration:none;color:var(--on-solid)}
+#ln .rel.isold{opacity:.85;border-style:dashed}
+#ln .rel.isold b{text-decoration:line-through}
+/* ============================================================
+   ỨNG DỤNG TỐI GIẢN CHUYỂN ĐỘNG
+   ============================================================ */
+/* Đặt ở cuối để thắng các quy tắc component phía trên (độ đặc hiệu bằng nhau, quyết định theo thứ tự). */
+/* Màu nhóm gốc được chọn cho nền sáng -> tự sáng dần khi nền tối để chữ đạt AA 4.5:1.
+   Khai báo color: var(--c) ở các quy tắc trên vẫn là fallback cho trình duyệt chưa hỗ trợ light-dark(). */
+#ln .tcode,#ln .ttype,#ln .kid b,#ln .rel b,#ln .orgcap b,#ln .pair .pnew b,#ln .trow b,
+#ln .trow .open,#ln .tlstep b,#ln .rpstep b,#ln .d-links button,#ln .pnode b{
+  color:light-dark(var(--c,#546e7a),color-mix(in oklab,var(--c,#546e7a) 62%,#fff))}
+#ln .d-code{color:light-dark(var(--c,var(--ink)),color-mix(in oklab,var(--c,var(--ink)) 62%,#fff))}
+#ln .tnum,#ln .trow .n,#ln .rpstep .n,#ln .pnode .n{
+  background:light-dark(color-mix(in oklab,var(--c,#546e7a) 88%,#000),color-mix(in oklab,var(--c,#546e7a) 62%,#fff));
+  /* light-dark() không được lồng nhau: phải tham chiếu token thô --paper-d, không dùng --paper (bản đã là light-dark()). */
+  color:light-dark(#fff,var(--paper-d))}
+@media (prefers-reduced-motion:reduce){
+  #ln *,#ln *::before,#ln *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  #ln main{animation:none}
+  #ln .ln-drawer,#ln .ln-dialog{animation:none}
+  #ln .ln-tabs::before{transition:none}
+}
+/* Thiết kế dùng viền mảnh + chữ phụ nhạt -> tăng sắc độ khi người dùng cần tương phản cao. */
+@media (prefers-contrast:more){
+  #ln{--line:var(--line-strong);--muted:var(--ink);--sh1:none;--sh2:0 0 0 1px var(--line-strong)}
+  #ln .tnode,#ln .card,#ln .kid,#ln .chap,#ln .pair{border-width:1.5px}
+}
+/* Forced Colors Mode: trình duyệt bỏ box-shadow/gradient -> mọi ranh giới phải là viền thật. */
+@media (forced-colors:active){
+  #ln .ln-top,#ln .card,#ln .tnode,#ln .kid,#ln .chap,#ln .pair,#ln .tbtn,#ln .trow,#ln .rpstep,
+  #ln .tlstep,#ln .pnode,#ln .lookup,#ln .askbox,#ln .ln-fixcard,#ln .fxword,#ln .fxsteps li,
+  #ln .ln-dialog,#ln .ln-qres,#ln .ln-tabs,#ln .ln-persona,#ln .orgfit,#ln .ln-toolbtn,#ln .chip,
+  #ln .ln-hint,#ln .ln-route,#ln .twhy,#ln .tourtip,#ln .tfix button,#ln .d-links button,#ln .fxlinks a{
+    border:1px solid CanvasText}
+  #ln .ln-tabs::before{background:Highlight;box-shadow:none}
+  #ln .tnode.ctx{border-style:dashed}
+  #ln .tnode.hit{border-width:2px}
+  #ln .trel,#ln .orghint,#ln .tmeta,#ln .tnone{color:GrayText}
+}
+
 @media (max-width:860px){
-  #ln .ln-top{position:static;padding:10px 12px 0}
-  #ln main{padding:16px 12px 0}
-  #ln .ln-tabs{margin-left:0}
+  #ln .ln-top{position:static;padding:10px 14px 0;backdrop-filter:none;-webkit-backdrop-filter:none}
+  #ln main{padding:18px 14px 0}
+  #ln .ln-tabs{margin-left:0;width:100%;overflow-x:auto;scrollbar-width:none}
+  #ln .ln-tabs::-webkit-scrollbar{display:none}
+  #ln .ln-tools{width:100%}
   #ln .lookup select{flex:1 1 100%;min-width:0;width:100%}
   #ln .pair{grid-template-columns:1fr}
   #ln .pair .parrow{transform:rotate(90deg);justify-self:center}
+  /* Điện thoại: cây đổ dọc treo — ray bên trái, con nằm dưới cha. */
+  #ln .orgscroll{overflow-x:visible;padding:0}
+  #ln .orgscroll>.org,#ln .orgscroll .tree,#ln .orgscroll .tree.row.flat{inline-size:auto}
+  #ln .orgscroll .tree.row,#ln .orgscroll .tree.row.flat{display:block;padding-block-start:0;padding-inline-start:20px}
+  #ln .orgscroll .tree.row[role="group"]::before{inset-block:6px 16px;inset-inline-start:9px;block-size:auto}
+  #ln .orgscroll .tree.row>.tli{display:block;padding:0 0 9px;margin-block-start:9px;align-items:stretch}
+  #ln .orgscroll .tree.row>.tli.tkid::after{display:none}
+  #ln .orgscroll .tree.row>.tli.tkid::before{display:block;inset-block-start:15px;inset-inline-start:-11px;
+    inset-inline-end:auto;inline-size:11px;block-size:0;border-block-start:1.5px solid var(--rail)}
+  #ln .orgscroll .tree.row>.tli.tkid:first-child::before{border-block-start:1.5px solid var(--rail)}
+  #ln .orgscroll .tree.row>.tli.tkid:last-child::before{border-inline-end:0}
+  #ln .orgscroll .tree.row>.tli.tkid>.tnode::before{display:none}
+  #ln .orgscroll .tree.stack::before{content:"";position:absolute;inset-block-start:0;block-size:16px;
+    inset-inline-start:0;border-inline-start:1.5px solid var(--rail)}
+  #ln .orgscroll .tree.stack::after{inline-size:9px;border-inline-end:0}
+  #ln .tnode,#ln .tnode.root{inline-size:auto}
+  #ln .tnode{padding:9px 11px 10px}
+  #ln .tcode{font-size:13px}
+  #ln .tnum{inline-size:18px;block-size:18px;font-size:10.5px}
 }
 </style>
 <script>
 (function(){
 "use strict";
-/* Thêm lĩnh vực pháp lý khác: thay khối DATA bên dưới theo đúng schema (groups/docs/tasks/timeline/readingPath). */
+/* Thêm lĩnh vực pháp lý khác: thay khối DATA bên dưới theo đúng schema (groups/docs/tasks/timeline/readingPath/tour; quan hệ docs[].basis/amends). */
 var DATA={
  "meta": {
   "sub": "Hệ thống văn bản xây dựng từ 01/7/2026 · một luật gốc · sáu nghị định · thay toàn bộ hệ cũ",
-  "src": "Nguồn: tổng hợp danh mục văn bản trên luatvietnam.vn (29/6/2026), costflow.vn, qlda.gxd.vn và văn bản gốc; ngày ghi là ngày ban hành. Thông tư, quyết định được nhóm theo chủ đề, không phải theo điều khoản dẫn chiếu. Nội dung đã rất gọn — khi trích dẫn chính thức cần đối chiếu nguyên văn.",
-  "title": "Bản đồ văn bản xây dựng"
+  "src": "Nguồn: tổng hợp danh mục văn bản trên luatvietnam.vn (29/6/2026), costflow.vn, qlda.gxd.vn và văn bản gốc; ngày ghi là ngày ban hành. Thông tư, quyết định được nhóm theo chủ đề, không phải theo điều khoản dẫn chiếu. Nội dung đã rất gọn — khi trích dẫn chính thức cần đối chiếu nguyên văn. Đã đối chiếu trang chính thức và tải toàn văn/PDF ký số cho 29 văn bản vào sources/ (11/2026); nút «Toàn văn / bản gốc» trong mỗi thẻ mở trang đã kiểm chứng. TT 36/2026 có QĐ đính chính 1538/QĐ-BXD (28/8/2026). TT 101/2026/TT-BQP hiện mới có tin giới thiệu trên bqp.vn (không phải CSDL). QĐ 1040 chưa tìm thấy PDF đính kèm trên trang công bố. Quan hệ «căn cứ pháp lý» và «sửa đổi» chỉ ghi nhận khi có bằng chứng từ toàn văn hoặc nguồn chính thống; các văn bản chưa kiểm chứng căn cứ được nối bằng nhóm chủ đề.",
+  "title": "Bản đồ văn bản xây dựng",
+  "dom": "xay-dung"
  },
  "groups": {
   "luat": {
@@ -330,7 +747,8 @@ var DATA={
     "nd175"
    ],
    "kw": "dự án khảo sát thiết kế thẩm định giấy phép trật tự",
-   "url": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-217-2026-nd-cp-quy-dinh-chi-tiet-mot-so-dieu-cua-luat-xay-dung-ve-quan-ly-hoat-dong-xay-dung--8a7d86d0-7d3f-11f1-baf6-815e332fd34f"
+   "url": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-217-2026-nd-cp-quy-dinh-chi-tiet-mot-so-dieu-cua-luat-xay-dung-ve-quan-ly-hoat-dong-xay-dung--8a7d86d0-7d3f-11f1-baf6-815e332fd34f",
+   "basis": "luat135"
   },
   "nd207": {
    "code": "NĐ 207/2026/NĐ-CP",
@@ -347,7 +765,8 @@ var DATA={
    "replaces": [
     "nd06"
    ],
-   "kw": "chất lượng thi công bảo trì nghiệm thu giám sát thí nghiệm qaqc tvgs"
+   "kw": "chất lượng thi công bảo trì nghiệm thu giám sát thí nghiệm qaqc tvgs",
+   "basis": "luat135"
   },
   "nd206": {
    "code": "NĐ 206/2026/NĐ-CP",
@@ -364,7 +783,8 @@ var DATA={
     "nd10"
    ],
    "kw": "chi phí tổng mức dự toán định mức giá xây dựng",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218454"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218454",
+   "basis": "luat135"
   },
   "nd210": {
    "code": "NĐ 210/2026/NĐ-CP",
@@ -382,7 +802,8 @@ var DATA={
     "nd50"
    ],
    "kw": "hợp đồng giá thanh toán quyết toán điều chỉnh",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218451"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218451",
+   "basis": "luat135"
   },
   "nd212": {
    "code": "NĐ 212/2026/NĐ-CP",
@@ -399,7 +820,8 @@ var DATA={
     "nd111"
    ],
    "kw": "năng lực chứng chỉ hành nghề csdl hệ thống thông tin",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218489"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218489",
+   "basis": "luat135"
   },
   "nd209": {
    "code": "NĐ 209/2026/NĐ-CP",
@@ -416,7 +838,8 @@ var DATA={
     "nd09"
    ],
    "kw": "vật liệu tái chế xanh chất lượng sản phẩm",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218449"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218449",
+   "basis": "luat135"
   },
   "tt32": {
    "code": "TT 32/2026/TT-BXD",
@@ -425,7 +848,8 @@ var DATA={
    "issued": "22/6/2026",
    "sum": "Quy định chi tiết NĐ 207 (có kế hoạch tổ chức thí nghiệm – Điều 2).",
    "kw": "biểu mẫu kế hoạch thí nghiệm chi tiết",
-   "url": "https://vbpl.vn/van-ban/chi-tiet/thong-tu-so-32-2026-tt-bxd-quy-dinh-chi-tiet-mot-so-dieu-cua-nghi-dinh-so-207-2026-nd-cp-ngay-15-thang-6-nam-2026-cua-chinh-phu-quy-dinh-chi-tiet-mot-so-dieu-cua-luat-xay-dung-ve-quan-ly-chat-luong-thi-cong-xay-dung-va-bao-tri-cong-trinh-xay-dung--58e44110-838c-11f1-a8a6-350e41594052"
+   "url": "https://vbpl.vn/van-ban/chi-tiet/thong-tu-so-32-2026-tt-bxd-quy-dinh-chi-tiet-mot-so-dieu-cua-nghi-dinh-so-207-2026-nd-cp-ngay-15-thang-6-nam-2026-cua-chinh-phu-quy-dinh-chi-tiet-mot-so-dieu-cua-luat-xay-dung-ve-quan-ly-chat-luong-thi-cong-xay-dung-va-bao-tri-cong-trinh-xay-dung--58e44110-838c-11f1-a8a6-350e41594052",
+   "basis": "nd207"
   },
   "tt33": {
    "code": "TT 33/2026/TT-BXD",
@@ -461,7 +885,10 @@ var DATA={
    "issued": "08/9/2026",
    "sum": "Sửa đổi một số điều của NĐ 217 và các nghị định khác.",
    "kw": "sửa đổi bổ sung",
-   "url": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-347-2026-nd-cp-sua-doi-bo-sung-mot-so-dieu-cua-nghi-dinh-so-169-2025-nd-cp-ngay-30-thang-6-nam-2025-cua-chinh-phu-quy-dinh-hoat-dong-khoa-hoc-cong-nghe-doi-moi-sang-tao-va-san-pham-dich-vu-ve-du-lieu-nghi-dinh-so-105-2025-nd-cp-ngay-15-thang-5-nam-2025-cua-chinh-phu-quy-dinh-chi-tiet-mot-so-dieu-va-bien-phap-thi-hanh-luat-phong-chay-chua-chay-va-cuu-nan-cuu-ho-nghi-dinh-so-106-2025-nd-cp-ngay-15-thang-5-nam-2025-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-trong-linh-vuc-phong-chay-chua-chay-va-cuu-nan-cuu-ho-nghi-dinh-so-282-2025-nd-cp-ngay-30-thang-10-nam-2025-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-trong-linh-vuc-an-ninh-trat-tu-an-toan-xa-hoi-phong-chong-te-nan-xa-hoi-phong-chong-bao-luc-gia-dinh--e31a9340-c912-11f1-8fd7-57e5e0f2ef73"
+   "url": "https://vbpl.vn/van-ban/chi-tiet/nghi-dinh-so-347-2026-nd-cp-sua-doi-bo-sung-mot-so-dieu-cua-nghi-dinh-so-169-2025-nd-cp-ngay-30-thang-6-nam-2025-cua-chinh-phu-quy-dinh-hoat-dong-khoa-hoc-cong-nghe-doi-moi-sang-tao-va-san-pham-dich-vu-ve-du-lieu-nghi-dinh-so-105-2025-nd-cp-ngay-15-thang-5-nam-2025-cua-chinh-phu-quy-dinh-chi-tiet-mot-so-dieu-va-bien-phap-thi-hanh-luat-phong-chay-chua-chay-va-cuu-nan-cuu-ho-nghi-dinh-so-106-2025-nd-cp-ngay-15-thang-5-nam-2025-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-trong-linh-vuc-phong-chay-chua-chay-va-cuu-nan-cuu-ho-nghi-dinh-so-282-2025-nd-cp-ngay-30-thang-10-nam-2025-cua-chinh-phu-quy-dinh-xu-phat-vi-pham-hanh-chinh-trong-linh-vuc-an-ninh-trat-tu-an-toan-xa-hoi-phong-chong-te-nan-xa-hoi-phong-chong-bao-luc-gia-dinh--e31a9340-c912-11f1-8fd7-57e5e0f2ef73",
+   "amends": [
+    "nd217"
+   ]
   },
   "vbhn91": {
    "code": "VBHN 91/2026/VBHN-NĐ-BXD",
@@ -498,7 +925,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Xác định và quản lý chi phí đầu tư xây dựng.",
    "kw": "chi phí quản lý tổng mức",
-   "url": "https://vbpl.vn/van-ban/chi-tiet/thong-tu-so-36-2026-tt-bxd-huong-dan-mot-so-noi-dung-phuong-phap-xac-dinh-va-quan-ly-chi-phi-dau-tu-xay-dung--11d658d0-c248-11f1-b99f-8fbcf2bfda8d"
+   "url": "https://vbpl.vn/van-ban/chi-tiet/thong-tu-so-36-2026-tt-bxd-huong-dan-mot-so-noi-dung-phuong-phap-xac-dinh-va-quan-ly-chi-phi-dau-tu-xay-dung--11d658d0-c248-11f1-b99f-8fbcf2bfda8d",
+   "basis": "nd206"
   },
   "tt37": {
    "code": "TT 37/2026/TT-BXD",
@@ -507,7 +935,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Phương pháp xác định định mức dự toán, chỉ tiêu kinh tế – kỹ thuật.",
    "kw": "định mức dự toán chỉ tiêu",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218630"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218630",
+   "basis": "nd206"
   },
   "tt38": {
    "code": "TT 38/2026/TT-BXD",
@@ -516,7 +945,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Ban hành định mức xây dựng.",
    "kw": "định mức xây dựng ban hành",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218632"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218632",
+   "basis": "nd206"
   },
   "tt40": {
    "code": "TT 40/2026/TT-BXD",
@@ -525,7 +955,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Xác định chi phí bảo trì công trình.",
    "kw": "chi phí bảo trì",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218643"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218643",
+   "basis": "nd206"
   },
   "qd1041": {
    "code": "QĐ 1041/QĐ-BXD",
@@ -534,7 +965,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Hướng dẫn xác định khối lượng công trình.",
    "kw": "khối lượng đo bóc",
-   "url": "https://moc.gov.vn/vn/Pages/ChiTietVanBan.aspx?vID=5000&TypeVB=1"
+   "url": "https://moc.gov.vn/vn/Pages/ChiTietVanBan.aspx?vID=5000&TypeVB=1",
+   "basis": "nd206"
   },
   "qd1040": {
    "code": "QĐ 1040/QĐ-BXD",
@@ -543,7 +975,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Công bố mẫu hợp đồng xây dựng.",
    "kw": "mẫu hợp đồng phụ lục",
-   "url": "https://moc.gov.vn/vn/Pages/ChiTietVanBan.aspx?vID=5003&TypeVB=1"
+   "url": "https://moc.gov.vn/vn/Pages/ChiTietVanBan.aspx?vID=5003&TypeVB=1",
+   "basis": "nd210"
   },
   "tt39": {
    "code": "TT 39/2026/TT-BXD",
@@ -555,7 +988,8 @@ var DATA={
     "tt24"
    ],
    "kw": "csdl hệ thống thông tin dữ liệu quốc gia",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218641"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218641",
+   "basis": "nd212"
   },
   "qd942": {
    "code": "QĐ 942/QĐ-BXD",
@@ -582,7 +1016,8 @@ var DATA={
    "issued": "26/6/2026",
    "sum": "Quản lý chất lượng sản phẩm, hàng hóa vật liệu xây dựng.",
    "kw": "chất lượng sản phẩm hàng hóa vật liệu",
-   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218644"
+   "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=218644",
+   "basis": "nd209"
   },
   "nd339": {
    "code": "NĐ 339/2026/NĐ-CP",
@@ -1062,7 +1497,28 @@ var DATA={
      "Khung pháp lý chung của hệ mới"
     ]
    ],
-   "note": "Biểu mẫu nghiệm thu nằm ở phụ lục kèm thông tư hướng dẫn — mở TT 32/2026 khi lập hồ sơ."
+   "note": "Biểu mẫu nghiệm thu nằm ở phụ lục kèm thông tư hướng dẫn — mở TT 32/2026 khi lập hồ sơ.",
+   "resolve": [
+    {
+     "t": "Lập danh mục hồ sơ nghiệm thu theo hệ mới",
+     "d": "NĐ 207/2026/NĐ-CP quy định quản lý chất lượng, nghiệm thu, bảo trì; TT 32/2026/TT-BXD hướng dẫn chi tiết kèm biểu mẫu — mở phụ lục của TT 32 khi lập hồ sơ."
+    },
+    {
+     "t": "Kiểm tra ai phải tham gia nghiệm thu",
+     "d": "Luật 135/2025/QH15 là khung chung: công trình phải được nghiệm thu trước khi đưa vào khai thác; kiểm tra trường hợp cần cơ quan chuyên môn về xây dựng tham gia."
+    },
+    {
+     "t": "Bổ sung hồ sơ riêng của công trình",
+     "d": "Biên bản nghiệm thu từng phần, chứng chỉ vật liệu, hồ sơ hoàn công… là hồ sơ riêng của dự án — yêu cầu nhà thầu bổ sung đủ trước khi ký nghiệm thu hoàn thành."
+    }
+   ],
+   "keys": [
+    "nghiem thu",
+    "hoan thanh cong trinh",
+    "xong nha",
+    "kiem tra truoc khi o",
+    "ho so chat luong"
+   ]
   },
   {
    "q": "Hợp đồng và hồ sơ cũ còn dẫn chiếu NĐ 06/2021 thì thay bằng văn bản nào",
@@ -1081,7 +1537,28 @@ var DATA={
      "Khung pháp lý gốc"
     ]
    ],
-   "note": "Đối chiếu điều khoản chuyển tiếp trước khi áp cho hợp đồng ký trước 01/7/2026."
+   "note": "Đối chiếu điều khoản chuyển tiếp trước khi áp cho hợp đồng ký trước 01/7/2026.",
+   "resolve": [
+    {
+     "t": "Thay dẫn chiếu NĐ 06/2021 bằng NĐ 207/2026",
+     "d": "NĐ 207/2026/NĐ-CP thay thế NĐ 06/2021 về quản lý chất lượng, thi công, bảo trì; dùng bản hợp nhất VBHN 91/2026 để tra điều khoản liền mạch."
+    },
+    {
+     "t": "Đọc điều khoản chuyển tiếp",
+     "d": "Hợp đồng ký trước 01/7/2026: đối chiếu điều khoản chuyển tiếp của NĐ 207/2026 và Luật 135/2025/QH15 trước khi áp quy định mới."
+    },
+    {
+     "t": "Rà phụ lục hợp đồng và hồ sơ dự án",
+     "d": "Danh mục tiêu chuẩn, chỉ dẫn kỹ thuật trong hợp đồng là phần riêng của dự án — cập nhật dẫn chiếu trong phụ lục, không chỉ sửa số hiệu văn bản."
+    }
+   ],
+   "keys": [
+    "nd 06",
+    "nghi dinh 06",
+    "06 2021",
+    "con dan chieu",
+    "hop dong cu"
+   ]
   },
   {
    "q": "Bị lập biên bản xử phạt vi phạm hành chính về xây dựng thì xem văn bản nào",
@@ -1099,17 +1576,104 @@ var DATA={
      "vbhn91",
      "Bản hợp nhất để tra hành vi và mức phạt liền mạch"
     ]
+   ],
+   "resolve": [
+    {
+     "t": "Đối chiếu hành vi trong biên bản với nghị định xử phạt",
+     "d": "NĐ 339/2026/NĐ-CP quy định xử phạt vi phạm hành chính trong xây dựng, nhà ở, bất động sản; tra đúng hành vi, khung phạt và biện pháp khắc phục."
+    },
+    {
+     "t": "Kiểm tra phần sửa đổi và bản hợp nhất",
+     "d": "NĐ 347/2026/NĐ-CP sửa đổi phần liên quan; dùng bản hợp nhất VBHN 91/2026 để đọc hành vi và mức phạt liền mạch, tránh áp bản cũ."
+    },
+    {
+     "t": "Xem xét quyền giải trình, khiếu nại",
+     "d": "Trước khi ký biên bản có quyền giải trình; quyết định xử phạt có thể bị khiếu nại hoặc khởi kiện — hỏi luật sư về thời hiệu và chứng cứ kèm theo."
+    }
+   ],
+   "keys": [
+    "bien ban xu phat",
+    "lap bien ban",
+    "bien ban vi pham",
+    "xu phat xay dung",
+    "xu phat ve xay dung"
+   ]
+  }
+ ],
+ "tour": [
+  {
+   "title": "Luật 135/2025 — khung của toàn hệ",
+   "why": "Luật Xây dựng 135/2025/QH15 là luật gốc, gồm 8 chương 95 điều, thay Luật 50/2014 và có hiệu lực từ 01/7/2026. Chưa cần đọc từng điều: lướt mục lục 8 chương để biết công việc của mình nằm ở chương nào. Sáu nghị định hướng dẫn ở các bước sau đều căn cứ từ luật này.",
+   "docs": [
+    "luat135"
+   ],
+   "tip": "Một số điều có hiệu lực sớm từ 01/01/2026 theo Điều 94 — kiểm tra điều khoản chuyển tiếp trước khi áp dụng."
+  },
+  {
+   "title": "NĐ 207/2026 — văn bản dùng hằng ngày",
+   "why": "NĐ 207/2026 quản lý chất lượng, thi công và bảo trì công trình — thứ mà kỹ sư QAQC và tư vấn giám sát đụng tới mỗi ngày. Nghị định này thay NĐ 06/2021, nên hồ sơ, biểu mẫu cũ còn dẫn chiếu NĐ 06 cần được rà lại. Trong sáu nghị định, đây là văn bản nên đọc kỹ đầu tiên.",
+   "docs": [
+    "nd207"
+   ]
+  },
+  {
+   "title": "TT 32/2026 và NĐ 62 — biểu mẫu, thí nghiệm",
+   "why": "TT 32/2026 chi tiết hóa NĐ 207: biểu mẫu nghiệm thu và kế hoạch tổ chức thí nghiệm. Khi lập hồ sơ chất lượng, mở thông tư này để lấy đúng mẫu thay vì dùng mẫu cũ. NĐ 62/2016 (đã được sửa bởi NĐ 14/2026) quy định về thí nghiệm chuyên ngành xây dựng và tự công bố năng lực — phòng thí nghiệm cần nắm.",
+   "docs": [
+    "tt32",
+    "nd62"
+   ]
+  },
+  {
+   "title": "VBHN 91/2026 — bản hợp nhất để tra cứu",
+   "why": "NĐ 217/2026 quản lý hoạt động xây dựng (dự án, khảo sát, thiết kế, giấy phép), thay NĐ 175/2024. NĐ 217 đã được NĐ 347/2026 sửa đổi và hợp nhất tại VBHN 91/2026 ngày 25/9/2026. Khi tra thiết kế hay giấy phép, mở bản hợp nhất để đọc quy định đã cập nhật, thay vì đọc bản gốc rồi tự ghép phần sửa.",
+   "docs": [
+    "vbhn91",
+    "nd217",
+    "nd347"
+   ]
+  },
+  {
+   "title": "Tiền và hợp đồng: NĐ 206 + NĐ 210",
+   "why": "NĐ 206/2026 quản lý chi phí đầu tư xây dựng (thay NĐ 10/2021); NĐ 210/2026 về hợp đồng xây dựng (thay NĐ 37/2015 và NĐ 50/2021). Làm dự toán, thanh toán hay ký hợp đồng thì mở hai nghị định này. TT 36/2026 hướng dẫn chi tiết phần chi phí — đọc kèm khi cần lập dự toán.",
+   "docs": [
+    "nd206",
+    "nd210",
+    "tt36"
+   ]
+  },
+  {
+   "title": "Năng lực và dữ liệu: NĐ 212 + TT 39",
+   "why": "NĐ 212/2026 quy định điều kiện năng lực của tổ chức, cá nhân và hệ thống thông tin, cơ sở dữ liệu quốc gia về xây dựng (thay NĐ 111/2024). TT 39/2026 hướng dẫn phần hệ thống thông tin và cơ sở dữ liệu. Liên quan trực tiếp đến chứng chỉ hành nghề và kê khai năng lực hoạt động.",
+   "docs": [
+    "nd212",
+    "tt39"
+   ]
+  },
+  {
+   "title": "Vật liệu: NĐ 209 + TT 41",
+   "why": "NĐ 209/2026 quản lý vật liệu xây dựng (thay NĐ 09/2021); TT 41/2026 hướng dẫn chất lượng sản phẩm vật liệu. Đây là nhóm văn bản cần đến việc nào mở văn bản đó — không phải đọc trước từ đầu.",
+   "docs": [
+    "nd209",
+    "tt41"
+   ]
+  },
+  {
+   "title": "NĐ 339/2026 — biết mức phạt khi làm sai",
+   "why": "NĐ 339/2026 quy định xử phạt vi phạm hành chính trong xây dựng, hạ tầng kỹ thuật, nhà ở và kinh doanh bất động sản; hiệu lực từ 26/8/2026, thay NĐ 16/2022. Đọc sau cùng: khi đã biết quy định đúng ở các bước trên, dùng nghị định này để tra mức phạt và biện pháp khắc phục nếu làm sai.",
+   "docs": [
+    "nd339"
    ]
   }
  ]
 };
-var LEX=[{"p":"hoa don.*(sai|sua|nham|tinh lai|huy|doi|tra lai)|(sai|sua|nham|tinh lai).*hoa don","add":["thue","suat","huy","lap","lai","xu","ly"],"drop":["tinh"],"say":"hóa đơn sai sót — hủy, thay thế, lập lại"},{"p":"dang ky hoa don|mua hoa don|phat hanh hoa don|hoa don dien tu|tai khoan thue","add":["dang","ky","phat","hanh","dien","tu"],"say":"đăng ký, phát hành hóa đơn điện tử"},{"p":"(xay|lam|hoan thanh).*(xong|hoan thanh)|kiem tra.*(truoc khi|ban giao|dua vao|su dung)|ban giao.*(cong trinh|nha|du an)","add":["nghiem","thu","chat","luong","cong","trinh","thi","cong"],"drop":["xong","truoc"],"say":"nghiệm thu, hồ sơ chất lượng công trình"},{"p":"khong.*(giay phep|phep)|giay phep|phep xay|xin phep","add":["giay","phep","thiet","ke","du","an","tham","tra"],"say":"giấy phép xây dựng, hồ sơ dự án, thiết kế"},{"p":"bi phat|phat tien|muc phat|lam sai|vi pham|bi xu ly","add":["xu","phat","hanh","chinh","muc","vi","pham"],"say":"xử phạt vi phạm hành chính"},{"p":"(ho so|bieu mau|quy trinh|hop dong).*(cu|dan chieu|06 2021|10 2021)|(van ban|nghi dinh).*(cu|het hieu luc|con dung|dang dung)","add":["thay","the","cu","ra","soat","chuyen","tiep"],"say":"rà soát văn bản cũ, điều khoản chuyển tiếp"},{"p":"nuoi con|con nho|bo me|ong ba|nguoi nha|khong di lam|that nghiep|nguoi phu thuoc|con cai","add":["nguoi","phu","thuoc","giam","tru","gia","canh"],"drop":["nuoi"],"say":"người phụ thuộc, giảm trừ gia cảnh"},{"p":"cuoi nam|het nam|quyet toan|nop thue|hoan thue|tra lai thue|dong thue","add":["quyet","toan","khau","tru","hoan","nop"],"say":"quyết toán, khấu trừ, hoàn thuế"},{"p":"ho kinh doanh|ban hang online|kinh doanh nho|mo cua hang|ban hang|cho thue nha","add":["ho","kinh","doanh","ke","khai","khoan"],"say":"hộ kinh doanh, kê khai thuế"},{"p":"chi phi|hoa don dau vao|giai trinh|loai chi|cong ty|doanh nghiep","add":["chi","phi","duoc","tru","giai","trinh","tndn"],"say":"chi phí được trừ khi tính thuế TNDN"},{"p":"hop dong|ky ket|thau|gia cong trinh|du toan|tam ung|thanh toan","add":["hop","dong","du","toan","chi","phi","dau","tu","thanh","toan"],"say":"hợp đồng xây dựng, dự toán, thanh toán"},{"p":"vat lieu|xi mang|sat thep|gach|chat luong san pham","add":["vat","lieu","chat","luong","san","pham"],"say":"quản lý chất lượng vật liệu xây dựng"},{"p":"thiet ke|ban ve|tham tra|phe duyet|du an dau tu","add":["thiet","ke","tham","tra","phe","duyet","du","an"],"say":"thiết kế, thẩm tra, phê duyệt dự án"},{"p":"bao tri|sua chua|hu hong|kiem dinh|het han su dung","add":["bao","tri","kiem","dinh","hu","hong"],"say":"bảo trì, kiểm định công trình"},{"p":"nghi viec|nghi lam|thoi viec|duoi viec|nhan vien moi|tuyen dung","add":["nghi","viec","tncn","khau","tru","quyet","toan"],"say":"thuế TNCN khi nghỉ việc, quyết toán"},{"p":"giay to|thu tuc|ho so|bieu mau|nop cho|xin xac nhan","add":["ho","so","bieu","mau","thu","tuc"],"say":"hồ sơ, biểu mẫu, thủ tục"}].concat(DATA.lexicon||[]);
+var LEX=[{"p":"hoa don.*(sai|sua|nham|tinh lai|huy|doi|tra lai)|(sai|sua|nham|tinh lai).*hoa don","add":["thue","suat","huy","lap","lai","xu","ly"],"drop":["tinh"],"dom":"thue","say":"hóa đơn sai sót — hủy, thay thế, lập lại"},{"p":"dang ky hoa don|mua hoa don|phat hanh hoa don|hoa don dien tu|tai khoan thue","add":["dang","ky","phat","hanh","dien","tu"],"dom":"thue","say":"đăng ký, phát hành hóa đơn điện tử"},{"p":"(xay|lam|hoan thanh).*(xong|hoan thanh)|kiem tra.*(truoc khi|ban giao|dua vao|su dung)|ban giao.*(cong trinh|nha|du an)","add":["nghiem","thu","chat","luong","cong","trinh","thi","cong"],"drop":["xong","truoc"],"dom":"xay-dung","say":"nghiệm thu, hồ sơ chất lượng công trình"},{"p":"khong.*(giay phep|phep)|giay phep|phep xay|xin phep","add":["giay","phep","thiet","ke","du","an","tham","tra"],"dom":"xay-dung","say":"giấy phép xây dựng, hồ sơ dự án, thiết kế"},{"p":"bi phat|phat tien|muc phat|lam sai|vi pham|bi xu ly","add":["xu","phat","hanh","chinh","muc","vi","pham"],"say":"xử phạt vi phạm hành chính"},{"p":"(ho so|bieu mau|quy trinh|hop dong).*(cu|dan chieu|06 2021|10 2021)|(van ban|nghi dinh).*(cu|het hieu luc|con dung|dang dung)","add":["thay","the","cu","ra","soat","chuyen","tiep"],"say":"rà soát văn bản cũ, điều khoản chuyển tiếp"},{"p":"nuoi con|con nho|bo me|ong ba|nguoi nha|khong di lam|that nghiep|nguoi phu thuoc|con cai","add":["nguoi","phu","thuoc","giam","tru","gia","canh"],"drop":["nuoi"],"dom":"thue","say":"người phụ thuộc, giảm trừ gia cảnh"},{"p":"cuoi nam|het nam|quyet toan|nop thue|hoan thue|tra lai thue|dong thue","add":["quyet","toan","khau","tru","hoan","nop"],"dom":"thue","say":"quyết toán, khấu trừ, hoàn thuế"},{"p":"ho kinh doanh|ban hang online|kinh doanh nho|mo cua hang|ban hang|cho thue nha","add":["ho","kinh","doanh","ke","khai","khoan"],"dom":"thue","say":"hộ kinh doanh, kê khai thuế"},{"p":"chi phi|hoa don dau vao|giai trinh|loai chi|cong ty|doanh nghiep","add":["chi","phi","duoc","tru","giai","trinh","tndn"],"dom":"thue","say":"chi phí được trừ khi tính thuế TNDN"},{"p":"hop dong|ky ket|thau|gia cong trinh|du toan|tam ung|thanh toan","add":["hop","dong","du","toan","chi","phi","dau","tu","thanh","toan"],"dom":"xay-dung","say":"hợp đồng xây dựng, dự toán, thanh toán"},{"p":"vat lieu|xi mang|sat thep|gach|chat luong san pham","add":["vat","lieu","chat","luong","san","pham"],"dom":"xay-dung","say":"quản lý chất lượng vật liệu xây dựng"},{"p":"thiet ke|ban ve|tham tra|phe duyet|du an dau tu","add":["thiet","ke","tham","tra","phe","duyet","du","an"],"dom":"xay-dung","say":"thiết kế, thẩm tra, phê duyệt dự án"},{"p":"bao tri|sua chua|hu hong|kiem dinh|het han su dung","add":["bao","tri","kiem","dinh","hu","hong"],"dom":"xay-dung","say":"bảo trì, kiểm định công trình"},{"p":"nghi viec|nghi lam|thoi viec|duoi viec|nhan vien moi|tuyen dung","add":["nghi","viec","tncn","khau","tru","quyet","toan"],"dom":"thue","say":"thuế TNCN khi nghỉ việc, quyết toán"},{"p":"giay to|thu tuc|ho so|bieu mau|nop cho|xin xac nhan","add":["ho","so","bieu","mau","thu","tuc"],"say":"hồ sơ, biểu mẫu, thủ tục"}].concat(DATA.lexicon||[]);
 var SOURCES=[{"id":"vbpl","name":"CSDL quốc gia về văn bản pháp luật","url":"https://vbpl.vn","owner":"Bộ Tư pháp","role":"Toàn văn PDF bản gốc/Công báo, văn bản hợp nhất, lược đồ hiệu lực","best":"Mọi loại văn bản; bản hợp nhất; kiểm tra hiệu lực"},{"id":"phapluat","name":"Cổng Pháp luật quốc gia","url":"https://phapluat.gov.vn","owner":"Bộ Tư pháp","role":"Văn bản mới ban hành, dự thảo lấy ý kiến","best":"Cập nhật văn bản mới; dự thảo"},{"id":"quochoi","name":"Cổng TTĐT Quốc hội","url":"https://quochoi.vn","owner":"Văn phòng Quốc hội","role":"Luật, nghị quyết vừa thông qua kèm hồ sơ dự án","best":"Luật / nghị quyết Quốc hội"},{"id":"congbao","name":"Công báo / Cổng Chính phủ","url":"https://congbao.chinhphu.vn","owner":"Văn phòng Chính phủ","role":"Văn bản giá trị pháp lý chính thức: nghị định, quyết định","best":"NĐ / QĐ Chính phủ, Thủ tướng"},{"id":"phapdien","name":"Bộ Pháp điển điện tử","url":"https://phapdien.moj.gov.vn","owner":"Bộ Tư pháp","role":"Hệ thống hóa quy định còn hiệu lực theo đề mục","best":"Tra theo chuyên ngành; rà soát hiệu lực"}];
-var VIEWS=[["map","Bản đồ"],["ask","Vấn đề của bạn"],["old","Cũ → Mới"],["task","Theo việc"],["time","Thời gian"],["path","Lộ trình"]].filter(function(v){
+var VIEWS=[["map","Bản đồ"],["ask","Vấn đề của bạn"],["old","Cũ → Mới"],["task","Theo việc"],["time","Thời gian"],["path","Học từng bước"]].filter(function(v){
   if(v[0]==="old")return DATA.pairs.length||Object.keys(DATA.docs).some(function(k){return DATA.docs[k].old;});
   if(v[0]==="task")return (DATA.tasks||[]).length;
   if(v[0]==="time")return (DATA.timeline||[]).length;
-  if(v[0]==="path")return (DATA.readingPath||[]).length;
+  if(v[0]==="path")return (DATA.readingPath||[]).length||(DATA.tour||[]).length;
   return true;});
 var root=document.getElementById("ln");
 var main=document.getElementById("ln-main");
@@ -1118,9 +1682,18 @@ var drawer=document.getElementById("ln-drawer");
 var dbody=document.getElementById("ln-dbody");
 var q=document.getElementById("ln-q");
 var qres=document.getElementById("ln-qres");
-var state={view:"map",task:null,askq:""};
+var state={view:"map",task:null,askq:"",tour:-1,tourDone:false};
 var urlQ=new URLSearchParams(location.search).get("q");
 if(urlQ){state.view="ask";state.askq=urlQ;}
+var PERSONAS=[["nguoidan","Người dân"],["lamnghe","Làm nghề"],["chuyensau","Chuyên sâu"]];
+var persona="lamnghe";
+try{var sp=localStorage.getItem("ln-persona");if(sp&&PERSONAS.some(function(p){return p[0]===sp;}))persona=sp;}catch(e){}
+if(!urlQ&&persona==="nguoidan")state.view="ask";
+var hintSeen=false;
+try{hintSeen=localStorage.getItem("ln-hint")==="1";}catch(e){}
+Object.keys(DATA.docs).forEach(function(k){(DATA.docs[k].amends||[]).forEach(function(t){
+  if(DATA.docs[t])(DATA.docs[t].amendedBy=DATA.docs[t].amendedBy||[]).push(k);});});
+var visViews=[];
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(ch){return{"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch];});}
 function D(id){return DATA.docs[id];}
@@ -1134,15 +1707,48 @@ document.getElementById("ln-src").textContent=DATA.meta.src;
 document.getElementById("ln-sources").innerHTML='<b>Nguồn chính thống:</b> '+SOURCES.map(function(s){return '<a href="'+esc(s.url)+'" target="_blank" rel="noopener" title="'+esc(s.owner)+' — '+esc(s.role)+'">'+esc(s.name)+"</a>";}).join(" · ");
 document.getElementById("ln-h1").textContent=DATA.meta.title||"Bản đồ văn bản pháp luật";
 
-tabsEl.innerHTML=VIEWS.map(function(v){
-  return '<button role="tab" data-view="'+v[0]+'" aria-selected="'+(v[0]===state.view)+'">'+v[1]+"</button>";
-}).join("");
+function buildTabs(){
+  visViews=VIEWS.filter(function(v){return !(persona==="nguoidan"&&v[0]==="old");});
+  if(!visViews.some(function(v){return v[0]===state.view;}))state.view=visViews[0][0];
+  tabsEl.innerHTML=visViews.map(function(v,i){
+    return '<button role="tab" data-view="'+v[0]+'" aria-selected="'+(v[0]===state.view)+'" title="Phím '+(i+1)+'">'+v[1]+"</button>";
+  }).join("");
+}
+function syncTabs(){tabsEl.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-selected",x.dataset.view===state.view);});syncTabPill();}
+buildTabs();
+/* viên highlight trượt dưới tab đang chọn (đo bằng offsetLeft/Width của chính button) */
+function syncTabPill(){
+  var b=tabsEl.querySelector('button[aria-selected="true"]');
+  if(!b){tabsEl.style.setProperty("--tb-on","0");return;}
+  tabsEl.style.setProperty("--tb-x",b.offsetLeft+"px");
+  tabsEl.style.setProperty("--tb-w",b.offsetWidth+"px");
+  tabsEl.style.setProperty("--tb-on","1");
+}
+addEventListener("resize",syncTabPill);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(syncTabPill);
+requestAnimationFrame(syncTabPill);
+
 tabsEl.addEventListener("click",function(e){
   var b=e.target.closest("button[data-view]");
   if(!b)return;
   state.view=b.dataset.view;
-  tabsEl.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-selected",x===b);});
+  syncTabs();
   render();
+});
+var personaEl=document.getElementById("ln-persona");
+function buildPersona(){
+  personaEl.innerHTML='<span class="ln-plabel">Bạn là:</span>'+PERSONAS.map(function(p){
+    return '<button data-persona="'+p[0]+'" aria-pressed="'+(persona===p[0])+'" title="'+
+      (p[0]==="nguoidan"?"Ẩn văn bản hết hiệu lực, mở đầu bằng khung vấn đề":p[0]==="chuyensau"?"Hiện cả văn bản cũ để rà soát chuyển tiếp":"Xem đầy đủ như hiện tại")+'">'+p[1]+"</button>";
+  }).join("");
+}
+buildPersona();
+personaEl.addEventListener("click",function(e){
+  var b=e.target.closest("[data-persona]");
+  if(!b||b.dataset.persona===persona)return;
+  persona=b.dataset.persona;
+  try{localStorage.setItem("ln-persona",persona);}catch(err){}
+  buildPersona();buildTabs();render();
 });
 
 function chipRow(list){return '<div class="chips">'+list.map(function(c){
@@ -1152,57 +1758,216 @@ function kidHtml(id){var d=D(id);
   return '<button class="kid" data-doc="'+id+'" style="'+st(id)+'"><b>'+code(id)+"</b><i>"+esc(d.issued||"")+"</i><span>"+
     (d.hl?"<mark>":"")+esc(d.sum)+(d.hl?"</mark>":"")+"</span></button>";}
 
-function grpCard(id){var d=D(id);
-  var kids=Object.keys(DATA.docs).filter(function(k){var x=D(k);return x.g===d.g&&k!==id&&!x.old&&x.type!=="Luật";});
-  var thay=(d.replaces||[]).map(function(r){return '<span class="chip thay">THAY</span> <span class="chip old">'+code(r)+"</span>";}).join(" ");
-  return '<article class="card tint grp" style="'+st(id)+'">'+
-    "<header><h4>"+code(id)+'</h4><span class="gsubj">'+esc(G(id).label)+"</span></header>"+
-    '<div class="gmeta">'+esc(d.issued||"")+(d.eff?" · hiệu lực "+esc(d.eff):"")+"</div>"+
-    (thay?'<div class="thay">'+thay+"</div>":"")+
-    (d.bullets?'<ul class="gbul">'+d.bullets.map(function(b){return "<li>"+esc(b)+"</li>";}).join("")+"</ul>":"")+
-    (kids.length?'<div class="kids">'+kids.map(kidHtml).join("")+"</div>":"")+
-    "</article>";}
-
-function relCard(id){var d=D(id);
-  return '<button class="card rel" data-doc="'+id+'" style="'+st(id)+'">'+
-    "<header><b>"+code(id)+'</b><span class="chip">'+esc(d.eff||d.issued)+"</span></header>"+
+function relCard(id,isold){var d=D(id);
+  return '<button class="card rel'+(isold?" isold":"")+'" data-doc="'+id+'" style="'+st(id)+'">'+
+    "<header><b>"+code(id)+'</b><span class="chip'+(isold?" old":"")+'">'+esc(isold?"hết hiệu lực":(d.eff||d.issued))+"</span></header>"+
     "<p>"+esc(d.sum)+"</p></button>";}
 
+// ── Cây quan hệ: văn bản gốc → văn bản hướng dẫn ─────────────────────────────
+var TRANK={"Luật":0,"Bộ luật":0,"Nghị định":1,"Thông tư":2,"Quyết định":3,"Văn bản hợp nhất":4};
+function rank(id){var r=TRANK[D(id).type];return r==null?9:r;}
+function isLaw(id){var t=D(id).type;return t==="Luật"||t==="Bộ luật";}
+function isSide(id){var g=D(id).g;return g==="xuphat"||g==="lq";}
+function sortDocs(a,b){return rank(a)-rank(b)||String(D(a).issued||"").localeCompare(String(D(b).issued||""))||code(a).localeCompare(code(b));}
+// Văn bản khác được chính mô tả của id dẫn chiếu bằng số (vd "quy định chi tiết NĐ 123/2020").
+function citedBy(id){
+  var x=D(id);
+  var txt=[x.sum,x.kw,(x.bullets||[]).join(" "),(x.chips||[]).join(" ")].filter(Boolean).join(" . ");
+  var nums=[],re=/(?:luật|nghị định|bộ luật|nđ|nd|tt|qd)\s*(\d{1,3}\/\d{4})/gi,mm;
+  while((mm=re.exec(txt)))nums.push(mm[1]);
+  if(!nums.length)return [];
+  return Object.keys(DATA.docs).filter(function(k){
+    if(k===id)return false;
+    var c=String(DATA.docs[k].code||"");
+    return nums.some(function(n){return c.indexOf(n)>=0;});
+  });
+}
+// Mỗi văn bản một cha, xét theo thứ tự tín hiệu đáng tin nhất → kém tin nhất.
+function treeRel(){
+  var ids=Object.keys(DATA.docs);
+  var laws=ids.filter(function(k){return isLaw(k)&&!D(k).old;});
+  var hlLaw=laws.filter(function(k){return D(k).hl;});
+  var par={},why={};
+  function put(id,p,w){if(p&&p!==id&&D(id)&&D(p)&&!par[id]){par[id]=p;why[id]=w;}}
+  ids.forEach(function(id){
+    var x=D(id);
+    if(isSide(id))return;                                   // xử phạt / liên quan: dựng thành nhánh riêng
+    if(x.parent&&D(x.parent)){put(id,x.parent,"biên soạn khai báo đây là văn bản con");return;}
+    if(x.old){
+      var nw=(x.replacedBy||[]).concat((DATA.pairs||[]).filter(function(p){return p.old===id;}).map(function(p){return p.nw;}))
+        .filter(function(k){return D(k)&&!D(k).old;})[0];
+      if(nw)put(id,nw,"đây là bản cũ, văn bản cha đã thay thế nó");
+      if(par[id])return;
+    }
+    var am=(x.amends||[]).filter(function(k){return D(k)&&!D(k).old;});
+    if(am.length===1){put(id,am[0],"nó sửa đổi trực tiếp văn bản cha");return;}
+    var lg=ids.filter(function(k){return k!==id&&D(k).g===x.g&&isLaw(k)&&!D(k).old;})
+      .sort(function(a,b){return String(D(a).issued||"").localeCompare(String(D(b).issued||""));})[0];
+    if(lg){put(id,lg,"cùng nhóm chủ đề với luật cha");return;}
+    if(D(x.g)&&x.g!==id&&!D(x.g).old){put(id,x.g,"thuộc nhóm hướng dẫn của văn bản cha");return;}
+    var ct=citedBy(id).filter(function(k){return !D(k).old&&rank(k)<rank(id);});
+    if(ct.length===1){put(id,ct[0],"mô tả của nó dẫn chiếu "+code(ct[0]));return;}
+    if(laws.length===1&&id!==laws[0]){put(id,laws[0],"bộ chỉ có một văn bản khung");return;}
+    if(hlLaw.length===1&&id!==hlLaw[0])put(id,hlLaw[0],"văn bản cha là luật khung khai báo của bộ");
+  });
+  ids.forEach(function(id){                                 // cắt vòng: văn bản trong vòng lặp thành node gốc
+    var seen={},cur=id;
+    while(par[cur]){if(seen[par[cur]]){delete par[id];delete why[id];break;}seen[par[cur]]=1;cur=par[cur];}
+  });
+  var kids={};
+  ids.forEach(function(id){var p=par[id];if(p)(kids[p]=kids[p]||[]).push(id);});
+  Object.keys(kids).forEach(function(p){kids[p].sort(sortDocs);});
+  return {par:par,why:why,kids:kids};
+}
+function kidsVis(id,TR){
+  return (TR.kids[id]||[]).filter(function(k){
+    return (TR.showOld||!D(k).old)&&(!TR.only||TR.only[k]);});
+}
+function subCount(id,TR){
+  var n=1;
+  kidsVis(id,TR).forEach(function(k){n+=subCount(k,TR);});
+  return n;
+}
+// Đánh số ô theo từng hàng (nghị định 1..n, thông tư tiếp n+1..) như sơ đồ giấy.
+function bfsNums(rootId,TR){
+  var nums={},i=0,cur=kidsVis(rootId,TR);
+  while(cur.length){
+    var next=[];
+    cur.forEach(function(id){if(nums[id]==null)nums[id]=++i;next=next.concat(kidsVis(id,TR));});
+    cur=next;
+  }
+  return nums;
+}
+function treeNode(id,TR,depth,nums){
+  var x=D(id),kids=kidsVis(id,TR);
+  var meta=[G(id).label,x.issued?"ban hành "+x.issued:"",x.eff?(x.old?"từng hiệu lực ":"hiệu lực ")+x.eff:""]
+    .filter(Boolean).join(" · ");
+  var cls=(x.old?" isold":"")+(depth?"":" root")+(TR.only&&!TR.hits[id]?" ctx":"")+(TR.only&&TR.hits[id]?" hit":"");
+  var h='<li class="tli'+(depth?" tkid":"")+'">'+
+    '<div class="tnode'+cls+'" id="tn-'+id+'" style="'+st(id)+'">'+
+      '<button type="button" class="tbody" data-doc="'+id+'">'+
+        (depth?'<span class="tnum" aria-hidden="true">'+(nums[id]||"")+"</span>":"")+
+        '<span class="ttype">'+esc(x.type||"Văn bản")+"</span>"+
+        '<b class="tcode">'+code(id)+"</b>"+
+        '<span class="tmeta">'+esc(meta)+"</span>"+
+        '<span class="tsum">'+esc(x.sum||"")+"</span>"+
+      "</button>"+
+      (depth?'<span class="trel">vì '+esc(TR.why[id]||"")+"</span>":"")+
+      (depth&&!kids.length&&!x.old&&!TR.only?'<span class="tnone">chưa có văn bản hướng dẫn trực tiếp</span>':"")+
+    "</div>";
+  var fix=(x.amendedBy||[]).filter(function(k){return D(k)&&kids.indexOf(k)<0;});   // bản sửa đã là node con thì khỏi lặp
+  if(!x.old&&fix.length)h+='<div class="tfix">được sửa đổi bởi '+
+    fix.map(function(k){return '<button type="button" data-doc="'+k+'">'+code(k)+"</button>";}).join("")+"</div>";
+  if(kids.length)h+='<ul role="group" aria-labelledby="tn-'+id+'" class="tree '+(depth?"stack":"row")+'">'+
+    kids.map(function(k){return treeNode(k,TR,depth+1,nums);}).join("")+"</ul>";
+  return h+"</li>";
+}
+function orgFigure(rootId,TR){
+  var x=D(rootId),kids=kidsVis(rootId,TR),total=subCount(rootId,TR);
+  return '<figure class="orgf">'+
+    '<figcaption class="orgcap" style="'+st(rootId)+'"><b>'+code(rootId)+"</b>"+
+      "<span>"+esc(G(rootId).label||"")+" · "+total+" văn bản trong sơ đồ</span>"+
+      '<button type="button" class="orgfit" data-fit hidden aria-pressed="false">Vừa khung</button></figcaption>'+
+    '<div class="orgscroll"><div class="org"><ul role="list" class="tree row">'+
+      treeNode(rootId,TR,0,bfsNums(rootId,TR))+
+    "</ul></div></div></figure>";
+}
+// Các ô gốc không có con (xử phạt, liên quan): xếp thành hàng ngang, không vẽ đường nối.
+function flatFigure(ids,TR,note){
+  return '<figure class="orgf">'+
+    '<figcaption class="orgcap"><b>'+ids.length+" ô độc lập</b><span>"+esc(note||"chưa có văn bản hướng dẫn kèm theo trong bộ này")+"</span></figcaption>"+
+    '<div class="orgscroll flat"><div class="org"><ul role="list" class="tree row flat">'+
+      ids.map(function(id){return treeNode(id,TR,0,{});}).join("")+
+    "</ul></div></div></figure>";
+}
+function chapsHtml(rootId,TR){
+  var x=D(rootId);
+  if(TR.par[rootId]||x.old||!x.chapters)return "";
+  return '<h4 class="chaps-h">Các chương của '+code(rootId)+"</h4><div class=\"chaps\">"+
+    x.chapters.map(function(ch){
+      return '<button type="button" class="chap" data-doc="'+rootId+'"><b>'+esc(ch.t)+"</b><span>"+esc(ch.d)+"</span>"+
+        (ch.nd?'<span class="chip">'+esc(ch.nd)+"</span>":"")+"</button>";}).join("")+"</div>";
+}
+function treeBranch(TR,ids,label,cls){
+  var roots=ids.filter(function(id){return !TR.par[id]&&(TR.showOld||!D(id).old);}).sort(sortDocs);
+  if(!roots.length)return "";
+  var tree=[],flat=[];
+  roots.forEach(function(id){(kidsVis(id,TR).length?tree:flat).push(id);});
+  var h='<h3 class="ln-h'+cls+'">'+esc(label)+"</h3>";
+  tree.forEach(function(id){h+=orgFigure(id,TR)+chapsHtml(id,TR);});
+  if(flat.length)h+=flatFigure(flat,TR);
+  return h;
+}
+// Cây thu gọn cho tab "Vấn đề của bạn": chỉ vẽ các văn bản kế hoạch mở + chuỗi văn bản khung của chúng.
+function askTreeHtml(r){
+  var hits=(r.plan||[]).map(function(x){return x[0];}).filter(function(id){return D(id);});
+  if(hits.length<2)return "";
+  var TR=treeRel();
+  TR.showOld=persona==="chuyensau";
+  var keep={},hit={},cur=hits.slice();
+  hits.forEach(function(id){hit[id]=1;});
+  while(cur.length){
+    var id=cur.pop();
+    if(keep[id])continue;
+    keep[id]=1;
+    var par=TR.par[id];
+    if(par&&D(par)&&(TR.showOld||!D(par).old))cur.push(par);
+  }
+  var roots=Object.keys(keep).filter(function(id){return !keep[TR.par[id]];}).sort(sortDocs);
+  if(!roots.length)return "";
+  TR.only=keep; TR.hits=hit;
+  var tree=[],solo=[];
+  roots.forEach(function(id){(kidsVis(id,TR).length?tree:solo).push(id);});
+  if(tree.length>3)return "";
+  var h='<h3 class="ln-h green">Sơ đồ liên quan — đúng các văn bản kế hoạch mở</h3>'+
+    '<p class="ln-lead">Vẽ '+Object.keys(hit).length+' văn bản kế hoạch đã chọn ở trên, kèm chuỗi văn bản khung của chúng để nối thành cây. '+
+    'Ô nền nhạt = văn bản khung để nối cây, không phải thứ bạn hỏi; đường nối và dòng nghiêng “vì …” giống hệt tab Bản đồ.</p>';
+  tree.forEach(function(id){h+=orgFigure(id,TR);});
+  if(solo.length)h+=flatFigure(solo,TR,"đứng riêng: kế hoạch không kèm văn bản hướng dẫn của ô này");
+  return h;
+}
 function viewMap(){
   var ids=Object.keys(DATA.docs);
-  var gids=Object.keys(DATA.groups).filter(function(g){return g!=="cu"&&g!=="lq"&&g!=="xuphat";});
-  var clusters=gids.map(function(g){
-    var mem=ids.filter(function(k){var d=D(k);return d.g===g&&!d.old;});
-    if(!mem.length)return null;
-    var head=mem.filter(function(k){return D(k).type==="Luật";})[0]||mem[0];
-    return {g:g,head:head,kids:mem.filter(function(k){return k!==head;})};
-  }).filter(Boolean);
-  var rel=ids.filter(function(k){var d=D(k);return !d.old&&(d.g==="lq"||d.g==="xuphat");});
-  var lawLed=clusters.filter(function(c){return D(c.head).type==="Luật";});
-  var decreeLed=clusters.filter(function(c){return D(c.head).type!=="Luật";});
-  var h="";
-  lawLed.forEach(function(c){
-    var d=D(c.head);
-    var chips=(d.chips||[]).concat(d.issued?["Ban hành "+d.issued]:[],d.eff?["Hiệu lực "+d.eff]:[]);
-    h+='<section class="card tint law" style="'+st(c.head)+'"><h2>'+code(c.head)+"</h2>"+
-      '<p class="gsubj">'+esc(DATA.groups[c.g].label)+"</p>"+
-      (chips.length?chipRow(chips):"")+
-      (d.chapters?'<div class="chaps">'+d.chapters.map(function(ch){
-        return '<button class="chap" data-doc="'+c.head+'"><b>'+esc(ch.t)+"</b><span>"+esc(ch.d)+"</span>"+
-          (ch.nd?'<span class="chip">'+esc(ch.nd)+"</span>":"")+"</button>";}).join("")+"</div>":"")+
-      (d.sum?'<p class="ln-lead">'+esc(d.sum)+"</p>":"")+
-      (c.kids.length?'<div class="kids">'+c.kids.map(kidHtml).join("")+"</div>":"")+
-      "</section>";
-  });
-  if(decreeLed.length){
-    var effs=decreeLed.map(function(c){return D(c.head).eff;});
-    var common=effs.length&&effs.every(function(e){return e&&e===effs[0];})?effs[0]:"";
-    h+='<h3 class="ln-h">'+(lawLed.length?"Nghị định hướng dẫn":"Các nhóm văn bản")+' <span class="chip">'+
-      (common?"đều hiệu lực "+esc(common):"bấm thẻ để xem chi tiết")+"</span></h3>"+
-      '<div class="grid6">'+decreeLed.map(function(c){return grpCard(c.head);}).join("")+"</div>";
+  if(!ids.length)return '<p class="ln-lead">Không có dữ liệu văn bản nào.</p>';
+  var TR=treeRel();
+  TR.showOld=persona==="chuyensau";
+  var h='<h2 class="ln-h">Sơ đồ cây — văn bản gốc ở trên, văn bản hướng dẫn ở dưới</h2>'+
+    '<p class="ln-lead">Mỗi sơ đồ đi từ một văn bản khung: hàng dưới là các nghị định quy định chi tiết, hàng cuối là thông tư/quyết định của từng nghị định. '+
+    'Bấm vào một ô để mở ghi chú chi tiết; sơ đồ rộng hơn màn hình thì kéo ngang hoặc bấm “Vừa khung”. '+
+    'Ô vẽ nét đứt là văn bản hết hiệu lực, nằm ngay dưới văn bản thay thế nó (chế độ “Chuyên sâu”). '+
+    'Dòng in nghiêng “vì …” cho biết căn cứ ghép nhánh — quan hệ do máy suy từ dữ liệu đã biên soạn, vẫn phải đối chiếu bản gốc khi trích dẫn.</p>'+
+    '<div class="legend"><i>Chữ số = thứ tự ô trong sơ đồ</i><i>Màu = nhóm văn bản</i>'+
+      '<i>Nét đứt = hết hiệu lực</i><i>Bấm ô = mở chi tiết</i></div>';
+  var main=ids.filter(function(id){return !isSide(id);});
+  h+=treeBranch(TR,main,"Luật và văn bản hướng dẫn","", "");
+  h+=treeBranch(TR,ids.filter(function(id){return D(id).g==="xuphat";}),"Xử phạt vi phạm hành chính"," red");
+  h+=treeBranch(TR,ids.filter(function(id){return D(id).g==="lq";}),"Văn bản liên quan"," green");
+  return h;
+}
+// Sơ đồ ngang: hiện nút "Vừa khung" khi cây tràn khung, phóng bằng zoom (kèm co cả layout, hết thanh cuộn).
+function initOrgFit(fig){
+  var scroll=fig.querySelector(".orgscroll"),org=fig.querySelector(".org"),btn=fig.querySelector("[data-fit]");
+  if(!scroll||!org||!btn)return;
+  var nat=org.getBoundingClientRect().width,box=scroll.clientWidth;
+  if(!(nat>box+8))return;
+  btn.hidden=false;
+  var ratio=nat/box;
+  function setFit(on){
+    btn.setAttribute("aria-pressed",on?"true":"false");
+    btn.textContent=on?"Kích thước thật":"Vừa khung";
+    org.style.zoom=on?String(Math.max(.34,+(box/nat).toFixed(3))):"";
   }
-  if(rel.length)h+='<h3 class="ln-h red">Văn bản liên quan</h3><div class="grid4">'+rel.map(relCard).join("")+"</div>";
-  return h||'<p class="ln-lead">Không có dữ liệu văn bản nào.</p>';}
+  btn.addEventListener("click",function(){setFit(btn.getAttribute("aria-pressed")!=="true");});
+  var fitNow=box/nat>=0.7;
+  var cap=fig.querySelector(".orgcap");
+  if(cap&&ratio>=1.15)cap.insertAdjacentHTML("beforeend",'<span class="orghint">cây rộng gấp '+
+    (Math.round(ratio*10)/10).toFixed(1).replace(".",",")+' lần khung — '+
+    (fitNow?'đang thu gọn cho vừa khung — bấm nút “Kích thước thật” để chữ to hơn'
+            :'kéo ngang để xem hết, hoặc bấm nút “Vừa khung” để thu gọn')+'</span>');
+  // Tự động vừa khung chỉ khi co lại chữ vẫn đọc (≥0,7); tràn nhiều thì giữ kích thật + kéo ngang.
+  if(fitNow)setFit(true);
+  else scroll.scrollLeft=Math.max(0,(scroll.scrollWidth-scroll.clientWidth)/2);
+}
 
 function pairHtml(p,big){var o=D(p.old),n=D(p.nw);
   return '<div class="pair" style="'+st(p.nw)+'">'+
@@ -1241,12 +2006,37 @@ function viewTime(){
     '<div class="tl">'+DATA.timeline.filter(function(s){return DATA.groups[s.g];}).map(function(s){
       return '<div class="tlstep" style="'+gst(s.g)+'"><b>'+esc(s.d)+"</b><span>"+esc(s.t)+"</span></div>";}).join("")+"</div>";}
 
+function tourSteps(){
+  var t=(DATA.tour||[]).filter(function(s){return (s.docs||[]).some(function(id){return D(id);});});
+  if(t.length)return t;
+  return (DATA.readingPath||[]).filter(function(s){return D(s.doc);}).map(function(s){
+    return {title:D(s.doc).code,why:s.why,docs:[s.doc]};});
+}
 function viewPath(){
-  return '<p class="ln-lead">Thứ tự nên đọc từ khung chung tới từng sắc thuế (góc nhìn người biên soạn). Bấm từng bước để mở chi tiết.</p>'+
-    '<div class="rp">'+DATA.readingPath.filter(function(s){return D(s.doc);}).map(function(s,i){var d=D(s.doc);
-      return '<button class="rpstep" data-doc="'+s.doc+'" style="'+st(s.doc)+'"><div class="n">'+(i+1)+"</div>"+
-        '<div><b>'+code(s.doc)+"</b><span>"+esc(s.why)+"</span></div></button>";}).join("")+"</div>"+
-    '<p class="quote">'+esc(DATA.quote)+"</p>";}
+  var steps=tourSteps();
+  if(state.tour<0||state.tour>=steps.length){
+    return '<p class="ln-lead">Lộ trình học từng bước cho người mới: mỗi bước nói rõ vì sao đọc văn bản đó và đọc để làm gì. Bấm bắt đầu, hoặc nhảy thẳng tới bước bạn cần.</p>'+
+      (state.tourDone?'<div class="twhy">Đã hoàn thành lộ trình — giờ bạn có thể tự mở đúng văn bản khi phát sinh công việc.</div>':"")+
+      '<button class="askgo tourstart" data-tourstart>Bắt đầu học từng bước ('+steps.length+" bước)</button>"+
+      '<div class="rp">'+steps.map(function(s,i){
+        var first=(s.docs||[]).filter(function(id){return D(id);})[0];
+        return '<button class="rpstep" data-tourgo="'+i+'" style="'+(first?st(first):"")+'"><div class="n">'+(i+1)+"</div>"+
+          "<div><b>"+esc(s.title)+"</b><span>"+esc(s.why)+"</span></div></button>";}).join("")+"</div>"+
+      (DATA.quote?'<p class="quote">'+esc(DATA.quote)+"</p>":"");
+  }
+  var s=steps[state.tour],n=steps.length,pct=Math.round((state.tour+1)/n*100);
+  var docs=(s.docs||[]).filter(function(id){return D(id);});
+  return '<div class="tourhead"><span class="chip hl">Bước '+(state.tour+1)+" / "+n+'</span><button class="ln-tourexit" data-tourexit>Thoát lộ trình</button></div>'+
+    '<div class="tourbar"><div style="width:'+pct+'%"></div></div>'+
+    '<article class="card tourcard"><h2>'+esc(s.title)+"</h2>"+
+    '<p class="d-body">'+esc(s.why)+"</p>"+
+    (s.tip?'<div class="tourtip"><b>Mẹo:</b> '+esc(s.tip)+"</div>":"")+
+    '<p class="d-sec">Văn bản của bước này — bấm để mở chi tiết</p><div class="kids tourkids">'+docs.map(kidHtml).join("")+"</div>"+
+    "</article>"+
+    '<div class="tourdots">'+steps.map(function(x,i){
+      return '<button data-tourdot="'+i+'" class="'+(i===state.tour?"on":"")+'" aria-label="Bước '+(i+1)+'"></button>';}).join("")+"</div>"+
+    '<div class="tourbtns"><button data-tourprev'+(state.tour===0?" disabled":"")+'>← Bước trước</button>'+
+    '<button class="askgo" data-tournext>'+(state.tour===n-1?"Hoàn thành":"Bước tiếp theo →")+"</button></div>";}
 
 function norm(s){return String(s==null?"":s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
   .replace(/đ/g,"d").replace(/[^a-z0-9\s]/g," ");}
@@ -1265,12 +2055,14 @@ function wset(s){var o={};norm(s).split(/\s+/).forEach(function(w){if(w)o[w]=1;}
 
 function analyze(q){
   var cs=concepts(q);
-  var says=[],nq=norm(q),drop={};
+  var says=[],nq=norm(q),drop={},gloss={};
   LEX.forEach(function(e){
+    if(e.dom&&e.dom!==(DATA.meta&&DATA.meta.dom))return;
     if(!new RegExp(e.p).test(nq))return;
     if(says.indexOf(e.say)<0)says.push(e.say);
     (e.add||[]).forEach(function(w){if(cs.indexOf(w)<0)cs.push(w);});
     (e.drop||[]).forEach(function(w){drop[w]=1;});
+    if(e.gloss)Object.keys(e.gloss).forEach(function(k){gloss[k]=e.gloss[k];});
   });
   cs=cs.filter(function(w){return !drop[w];});
   if(!cs.length)return null;
@@ -1321,7 +2113,7 @@ function analyze(q){
     Object.keys(ds).filter(function(id){return ds[id].s>0&&!D(id).old;})
       .sort(function(a,b){return ds[b].s-ds[a].s;}).slice(0,4)
       .map(function(id){return [id,"Khớp khái niệm trong mô tả vấn đề của bạn"];});
-  var note="",curated=false;
+  var note="",curated=false,resolve=null;
   var bestP=null,bestPScore=0;
   function keyScore(p){
     var best=0;
@@ -1348,6 +2140,7 @@ function analyze(q){
     var pl=(bestP.plan||[]).filter(function(x){return D(x[0]);});
     if(pl.length){plan=pl;curated=true;pct=Math.max(pct,Math.min(100,bestP.cover||pct));}
     if(bestP.note)note=bestP.note;
+    if(Array.isArray(bestP.resolve)&&bestP.resolve.length)resolve=bestP.resolve;
   }
   var inPlan={};plan.forEach(function(p){inPlan[p[0]]=1;});
   var best=0;
@@ -1363,24 +2156,49 @@ function analyze(q){
     pct>0?"Chỉ gợi điểm khởi đầu: câu mô tả còn chung chung — thêm chi tiết đời thường (việc gì, giấy tờ gì, ai liên quan, lúc nào) để hệ thống dịch sát hơn.":
     "Chưa khớp: bộ văn bản chưa có nội dung cho mô tả này.";
   return {pct:pct,tier:tier,covN:cs.length-miss.length,csN:cs.length,
-    plan:plan,rel:rel,miss:miss.slice(0,4),note:note,curated:curated,orig:orig,says:says};
+    plan:plan,rel:rel,miss:miss.slice(0,4),note:note,curated:curated,orig:orig,says:says,gloss:gloss,resolve:resolve};
 }
 
+function fixFallback(){
+  return [
+    {t:"Tra văn bản chuyên ngành tại nguồn chính thống",d:"Bộ hiện tại chưa có văn bản dẫn được khía cạnh này. Tìm bản còn hiệu lực (ưu tiên bản hợp nhất mới nhất) trên các nguồn chính thống bên dưới.",links:true},
+    {t:"Tập hợp hồ sơ riêng của tình huống",d:"Hợp đồng, giấy tờ nội bộ, hồ sơ kỹ thuật, thư từ trao đổi… là phần văn bản chung không thể thay thế. Chuẩn bị đủ trước khi làm việc với cơ quan chuyên môn."},
+    {t:"Hỏi đúng nơi có thẩm quyền",d:"Cơ quan quản lý lĩnh vực này tại địa phương hoặc chuyên gia (luật sư, công chứng, tư vấn thiết kế…). Mang theo bản dịch khái niệm ở trên để hỏi đúng trọng tâm."}
+  ];
+}
 function askHtml(r){
+  var hasMiss=!!(r.miss&&r.miss.length);
+  var steps=(r.resolve&&r.resolve.length)?r.resolve:(hasMiss?fixFallback():null);
+  var showFix=hasMiss||!!steps;
   var h='<div class="score"><div class="pct">'+r.pct+'<small>%</small></div><div class="scoretxt"><b>'+esc(r.tier)+"</b>"+
     (r.curated?' <span class="chip hl">kịch bản đã kiểm duyệt</span>':"")+"<br>"+
     r.covN+"/"+r.csN+" khía cạnh trong mô tả khớp bộ văn bản · kế hoạch mở "+r.plan.length+" văn bản theo thứ tự ưu tiên"+
-    (r.pct<100?" · "+(100-r.pct)+"% còn lại nằm ngoài phạm vi phủ.":" · không còn khía cạnh nào ngoài phạm vi phủ.")+"</div></div>";
+    (r.pct<100?(showFix?' · <a class="missjump" href="#ln-fixcard">'+(100-r.pct)+"% còn lại nằm ngoài phạm vi phủ — xem hướng giải quyết ↓</a>":" · "+(100-r.pct)+"% còn lại nằm ngoài phạm vi phủ."):" · không còn khía cạnh nào ngoài phạm vi phủ.")+"</div></div>";
+  h+='<div id="ln-askroute"></div>';
   if(r.says&&r.says.length)h+='<p class="ln-lead"><b>Hệ thống hiểu câu của bạn là:</b></p><div class="chips">'+
     r.says.map(function(s){return '<span class="chip hl">'+esc(s)+"</span>";}).join("")+"</div>";
   h+='<h3 class="ln-h green">Bắt đầu từ đây</h3><div class="rp">'+r.plan.map(function(p,i){
     return '<button class="rpstep" data-doc="'+p[0]+'" style="'+st(p[0])+'"><div class="n">'+(i+1)+"</div>"+
       "<div><b>"+code(p[0])+"</b><span>"+esc(p[1])+"</span></div></button>";}).join("")+"</div>";
-  if(r.rel.length)h+='<h3 class="ln-h">Liên quan — mở khi vướng</h3><div class="grid4">'+r.rel.map(relCard).join("")+"</div>";
-  if(r.miss.length)h+='<h3 class="ln-h red">Khía cạnh chưa phủ ('+(100-r.pct)+'%)</h3><ul class="miss">'+
-    r.miss.map(function(w){return "<li>“"+esc((r.orig&&r.orig[w])||w)+"”</li>";}).join("")+"</ul>"+
-    '<p class="ln-lead">Phần này cần nguồn khác: văn bản chuyên ngành ngoài bộ hiện có, hợp đồng và hồ sơ nội bộ, hoặc ý kiến chuyên gia.</p>';
-  if(r.note)h+='<p class="ln-lead"><b>Ghi chú biên soạn:</b> '+esc(r.note)+"</p>";
+  h+=askTreeHtml(r);
+  if(showFix){
+    h+='<div class="ln-fixcard" id="ln-fixcard">'+
+      '<div class="fxhead"><span class="fxicon" aria-hidden="true">!</span><div class="fxttl"><b>'+
+      (hasMiss?"Phần chưa phủ ("+(100-r.pct)+"%) — hướng giải quyết":"Hướng giải quyết cho tình huống của bạn")+
+      "</b><span>"+(hasMiss?"Bộ văn bản chưa dẫn được "+r.miss.length+" khía cạnh bạn nêu. Đừng dừng ở con số phần trăm — xử lý phần này theo các bước dưới đây.":"Các bước cụ thể để xử lý tình huống bạn mô tả, kể cả phần nằm ngoài bộ văn bản hiện có.")+"</span></div></div>";
+    if(hasMiss)h+='<div class="fxwords">'+r.miss.map(function(w){
+      var g=r.gloss&&r.gloss[w];
+      return '<div class="fxword"><b>“'+esc((r.orig&&r.orig[w])||w)+'”</b><span>'+(g?esc(g):"Khái niệm này chưa xuất hiện trong bộ văn bản — cần nguồn ngoài.")+"</span></div>";
+    }).join("")+"</div>";
+    if(steps)h+='<ol class="fxsteps">'+steps.map(function(s){
+      return "<li><b>"+esc(s.t)+"</b><span>"+esc(s.d)+"</span>"+
+        (s.links?'<span class="fxlinks">'+SOURCES.map(function(x){return '<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+" ↗</a>";}).join("")+"</span>":"")+
+        "</li>";
+    }).join("")+"</ol>";
+    if(r.note)h+='<p class="fxnote"><b>Ghi chú biên soạn:</b> '+esc(r.note)+"</p>";
+    h+="</div>";
+  }
+  if(r.rel.length)h+='<h3 class="ln-h">Liên quan — mở khi vướng</h3><div class="grid4">'+r.rel.map(function(id){return relCard(id);}).join("")+"</div>";
   h+='<p class="askwarn">Phần trăm đo mức phủ tài liệu của bộ văn bản này đối với mô tả của bạn — không phải cam kết kết quả pháp lý. Trước khi áp dụng luôn đối chiếu nguyên văn và kiểm tra hiệu lực tại thời điểm dùng.</p>';
   return h;
 }
@@ -1391,6 +2209,26 @@ function runAsk(){
   state.askq=ta.value;
   var r=analyze(ta.value);
   box.innerHTML=r?askHtml(r):'<p class="ln-lead">Cứ kể như nhắn cho đồng nghiệp, không cần từ chuyên ngành — ví dụ “xây xong nhà không biết ai kiểm tra trước khi ở”, “hóa đơn tính sai tiền khách bắt sửa”. Hệ thống tự dịch sang ngôn ngữ văn bản; hoặc bấm một câu mẫu phía trên.</p>';
+  Array.prototype.forEach.call(box.querySelectorAll(".orgf"),initOrgFit);
+  routeHint(ta.value,r?r.pct:0);
+}
+
+function routeHint(q,pct){
+  var box=document.getElementById("ln-askroute");
+  if(!box)return;
+  box.innerHTML="";
+  var m=location.pathname.match(/\/api\/sets\/([^/]+)\/map/);
+  if(!m||typeof fetch!=="function"||!q)return;
+  fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({q:q})})
+    .then(function(r){return r.json();})
+    .then(function(res){
+      var b=document.getElementById("ln-askroute");
+      if(!b||state.askq!==q)return;
+      var top=(res.results||[])[0];
+      if(!top||top.id===m[1]||top.pct<60||top.pct<=pct)return;
+      b.innerHTML='<div class="ln-route"><span><b>Câu này thuộc bộ khác trong thư viện:</b> «'+esc(top.name)+'» phủ '+top.pct+'% điều bạn mô tả — bộ hiện tại chỉ phủ '+pct+'%.</span>'+
+        '<a class="askgo" href="/api/sets/'+encodeURIComponent(top.id)+'/map?q='+encodeURIComponent(q)+'">Mở bộ đó kèm câu hỏi →</a></div>';
+    }).catch(function(){});
 }
 
 function viewAsk(){
@@ -1405,7 +2243,14 @@ function viewAsk(){
 
 function render(){
   qres.hidden=true;
-  main.innerHTML={map:viewMap,ask:viewAsk,old:viewOld,task:viewTask,time:viewTime,path:viewPath}[state.view]();
+  var h={map:viewMap,ask:viewAsk,old:viewOld,task:viewTask,time:viewTime,path:viewPath}[state.view]();
+  if(state.view==="map"&&!hintSeen){
+    h='<div class="ln-hint"><span>Mới lần đầu? Kể vấn đề bằng lời thường ở tab <b>Vấn đề của bạn</b>, hoặc đi từng bước ở <b>Học từng bước</b>. Chọn vai trò «Bạn là» phía trên để lọc nội dung cho đúng nhu cầu.</span><button data-hintx aria-label="Ẩn gợi ý">&times;</button></div>'+h;
+  }
+  main.innerHTML=h;
+  if(state.view==="map"){
+    Array.prototype.forEach.call(main.querySelectorAll(".orgf"),initOrgFit);
+  }
   if(state.view==="ask"){
     document.getElementById("ln-askgo").addEventListener("click",runAsk);
     document.getElementById("ln-askq").addEventListener("keydown",function(e){
@@ -1442,14 +2287,24 @@ function openDoc(id){
   if(d.replacedBy&&d.replacedBy.length){
     h+='<p class="d-sec">Được thay bởi</p><div class="d-links">'+d.replacedBy.filter(function(r){return D(r);}).map(function(r){
       return '<button data-doc="'+r+'" style="'+st(r)+'">'+code(r)+"</button>";}).join("")+"</div>";}
+  if(d.basis&&D(d.basis)){
+    h+='<p class="d-sec">Căn cứ pháp lý</p><div class="d-links"><button data-doc="'+d.basis+'" style="'+st(d.basis)+'">'+code(d.basis)+"</button></div>";}
+  if(d.amends&&d.amends.length){
+    h+='<p class="d-sec">Sửa đổi, bổ sung</p><div class="d-links">'+d.amends.filter(function(r){return D(r);}).map(function(r){
+      return '<button data-doc="'+r+'" style="'+st(r)+'">'+code(r)+"</button>";}).join("")+"</div>";}
+  if(d.amendedBy&&d.amendedBy.length){
+    h+='<p class="d-sec">Được sửa đổi bởi</p><div class="d-links">'+d.amendedBy.filter(function(r){return D(r);}).map(function(r){
+      return '<button data-doc="'+r+'" style="'+st(r)+'">'+code(r)+"</button>";}).join("")+"</div>";}
   var kids=Object.keys(DATA.docs).filter(function(k){var x=D(k);return x.g===d.g&&k!==id&&!x.old&&x.type!=="Luật"&&d.type==="Nghị định";});
   if(kids.length)h+='<p class="d-sec">Văn bản đi kèm</p><div class="d-links">'+kids.map(function(k){
     return '<button data-doc="'+k+'" style="'+st(k)+'">'+code(k)+"</button>";}).join("")+"</div>";
   var inTasks=DATA.tasks.filter(function(t){return t.docs.some(function(p){return p[0]===id;});});
   if(inTasks.length)h+='<p class="d-sec">Dùng cho việc</p><div class="d-links">'+inTasks.map(function(t){
     return '<button data-gotask="'+t.id+'">'+esc(t.label)+"</button>";}).join("")+"</div>";
-  var rp=DATA.readingPath.findIndex(function(s){return s.doc===id;});
-  if(rp>=0)h+='<p class="d-sec">Lộ trình đọc</p><p class="d-body">Bước '+(rp+1)+" / 5 — "+esc(DATA.readingPath[rp].why)+"</p>";
+  var rp=(DATA.readingPath||[]).findIndex(function(s){return s.doc===id;});
+  if(rp>=0)h+='<p class="d-sec">Lộ trình đọc</p><p class="d-body">Bước '+(rp+1)+" / "+DATA.readingPath.length+" — "+esc(DATA.readingPath[rp].why)+"</p>";
+  var ti=tourSteps().findIndex(function(s){return (s.docs||[]).indexOf(id)>=0;});
+  if(ti>=0)h+='<p class="d-sec">Trong lộ trình học</p><p class="d-body">Bước '+(ti+1)+": "+esc(tourSteps()[ti].title)+' — <button class="ln-tourexit" data-tourjump="'+ti+'">mở bước này</button></p>';
   dbody.innerHTML=h;
   drawer.hidden=false;
 }
@@ -1458,7 +2313,16 @@ document.getElementById("ln-x").addEventListener("click",closeDrawer);
 
 root.addEventListener("click",function(e){
   var doc=e.target.closest("[data-doc]");
-  if(doc){openDoc(doc.dataset.doc);return;}
+  if(doc){openDoc(doc.dataset.doc);closeModals();return;}
+  if(e.target.closest("[data-hintx]")){hintSeen=true;try{localStorage.setItem("ln-hint","1");}catch(err){}render();return;}
+  if(e.target.closest("[data-tourstart]")){state.tour=0;state.tourDone=false;render();return;}
+  var tg=e.target.closest("[data-tourgo],[data-tourjump],[data-tourdot]");
+  if(tg){state.view="path";state.tour=+(tg.dataset.tourgo||tg.dataset.tourjump||tg.dataset.tourdot);state.tourDone=false;syncTabs();closeDrawer();render();return;}
+  if(e.target.closest("[data-tourexit]")){state.tour=-1;render();return;}
+  if(e.target.closest("[data-tourprev]")){if(state.tour>0)state.tour--;render();return;}
+  if(e.target.closest("[data-tournext]")){
+    if(state.tour>=tourSteps().length-1){state.tour=-1;state.tourDone=true;}else state.tour++;
+    render();return;}
   var t=e.target.closest("[data-task]");
   if(t){state.task=t.dataset.task;
     main.querySelectorAll(".tbtn").forEach(function(b){b.setAttribute("aria-pressed",b===t);});
@@ -1466,19 +2330,19 @@ root.addEventListener("click",function(e){
     return;}
   var gt=e.target.closest("[data-gotask]");
   if(gt){state.view="task";state.task=gt.dataset.gotask;
-    tabsEl.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-selected",x.dataset.view==="task");});
-    render();closeDrawer();return;}
+    syncTabs();render();closeDrawer();return;}
   var ai=e.target.closest("[data-aski]");
   if(ai){var p=(DATA.problems||[])[+ai.dataset.aski];
     if(p){state.askq=p.q;render();}
     return;}
-  if(!e.target.closest(".ln-drawer")&&!e.target.closest(".ln-searchbox"))closeDrawer();
+  if(!e.target.closest(".ln-drawer")&&!e.target.closest(".ln-searchbox")&&!e.target.closest(".ln-modal"))closeDrawer();
 });
 
 function searchList(term){
   term=term.trim().toLowerCase();
   if(term.length<2)return [];
   return Object.keys(DATA.docs).filter(function(id){var d=D(id);
+    if(persona==="nguoidan"&&d.old)return false;
     return (d.code+" "+d.sum+" "+(d.kw||"")).toLowerCase().indexOf(term)>=0;
   }).slice(0,9);
 }
@@ -1493,9 +2357,132 @@ q.addEventListener("keydown",function(e){
   if(e.key==="Enter"){var list=searchList(q.value);if(list.length){openDoc(list[0]);qres.hidden=true;}}
   if(e.key==="Escape"){qres.hidden=true;q.blur();}
 });
+var pathModal=document.getElementById("ln-pathmodal");
+var helpModal=document.getElementById("ln-helpmodal");
+function closeModals(){pathModal.hidden=true;helpModal.hidden=true;}
+function relEdges(){
+  var E=[],seen={};
+  function add(a,b,label){
+    if(!a||!b||a===b||!D(a)||!D(b))return;
+    var k=a<b?a+"|"+b:b+"|"+a;
+    if(seen[k])return;seen[k]=1;
+    E.push([a,b,label]);
+  }
+  Object.keys(DATA.docs).forEach(function(id){var d=D(id);
+    if(d.basis)add(id,d.basis,"căn cứ pháp lý");
+    (d.amends||[]).forEach(function(t){add(id,t,"sửa đổi, bổ sung");});
+    (d.replaces||[]).forEach(function(t){add(id,t,"thay thế");});
+  });
+  (DATA.pairs||[]).forEach(function(p){add(p.nw,p.old,"thay thế");});
+  Object.keys(DATA.groups).forEach(function(g){
+    if(g==="cu"||g==="lq")return;
+    var mem=Object.keys(DATA.docs).filter(function(k){return D(k).g===g&&!D(k).old;});
+    if(mem.length<2)return;
+    var head=mem.filter(function(k){return D(k).type==="Luật";})[0]||mem.filter(function(k){return k===g;})[0]||mem[0];
+    mem.forEach(function(k){if(k!==head)add(head,k,"cùng nhóm hướng dẫn");});
+  });
+  return E;
+}
+function findPath(a,b){
+  var adj={};
+  relEdges().forEach(function(e){
+    (adj[e[0]]=adj[e[0]]||[]).push([e[1],e[2]]);
+    (adj[e[1]]=adj[e[1]]||[]).push([e[0],e[2]]);
+  });
+  var prev={},seen={};seen[a]=1;
+  var queue=[a];
+  while(queue.length){
+    var u=queue.shift();
+    if(u===b)break;
+    (adj[u]||[]).forEach(function(ed){
+      if(!seen[ed[0]]){seen[ed[0]]=1;prev[ed[0]]=[u,ed[1]];queue.push(ed[0]);}
+    });
+  }
+  if(!seen[b])return null;
+  var path=[],cur=b;
+  while(cur!==a){path.unshift({id:cur,rel:prev[cur][1]});cur=prev[cur][0];}
+  path.unshift({id:a,rel:null});
+  return path;
+}
+function fillPick(sel){
+  var ids=Object.keys(DATA.docs).sort(function(x,y){return (D(x).old?1:0)-(D(y).old?1:0);});
+  sel.innerHTML='<option value="">— chọn văn bản —</option>'+ids.map(function(id){
+    return '<option value="'+id+'">'+code(id)+(D(id).old?" (hết hiệu lực)":"")+"</option>";}).join("");
+}
+document.getElementById("ln-pathbtn").addEventListener("click",function(){
+  fillPick(document.getElementById("ln-pfrom"));
+  fillPick(document.getElementById("ln-pto"));
+  document.getElementById("ln-pres").innerHTML="";
+  pathModal.hidden=false;
+});
+document.getElementById("ln-pgo").addEventListener("click",function(){
+  var a=document.getElementById("ln-pfrom").value,b=document.getElementById("ln-pto").value;
+  var box=document.getElementById("ln-pres");
+  if(!a||!b){box.innerHTML='<p class="ln-lead">Chọn đủ hai văn bản đã.</p>';return;}
+  if(a===b){box.innerHTML='<p class="ln-lead">Hai lựa chọn trùng nhau — chọn văn bản thứ hai khác văn bản đầu.</p>';return;}
+  var p=findPath(a,b);
+  if(!p){box.innerHTML='<p class="ln-lead">Không có chuỗi quan hệ nối hai văn bản này trong bộ hiện tại. Thử đi qua văn bản khung (luật gốc hoặc nghị định hướng dẫn chung của nhóm).</p>';return;}
+  box.innerHTML='<p class="ln-lead"><b>Chuỗi '+p.length+" văn bản</b> — bấm từng thẻ để mở chi tiết:</p>"+
+    '<div class="ln-chain">'+p.map(function(step,i){
+      var s=D(step.id).sum;
+      return (i?'<div class="ln-edge">'+esc(step.rel)+"</div>":"")+
+        '<button class="pnode" data-doc="'+step.id+'" style="'+st(step.id)+'"><span class="n">'+(i+1)+"</span><span><b>"+code(step.id)+"</b><i>"+esc(s.length>90?s.slice(0,90)+"…":s)+"</i></span></button>";
+    }).join("")+"</div>";
+});
+function openHelp(){
+  document.getElementById("ln-keys").innerHTML=[
+    ["/","Nhảy vào ô tìm kiếm"],
+    ["1–"+visViews.length,"Chuyển tab: "+visViews.map(function(v,i){return (i+1)+"="+v[1];}).join(", ")],
+    ["?","Mở / đóng bảng phím tắt này"],
+    ["Esc","Đóng khung chi tiết và các hộp thoại"],
+    ["Ctrl/⌘+Enter","Trong ô vấn đề: phân tích ngay"]
+  ].map(function(k){return "<li><kbd>"+esc(k[0])+"</kbd><span>"+esc(k[1])+"</span></li>";}).join("");
+  helpModal.hidden=false;
+}
+/* Nút đổi nền: hai trạng thái — theo hệ thống, hoặc ghim ngược lại với những gì đang hiển thị.
+   Màu do CSS lo (light-dark + <meta>); JS chỉ ghi giá trị và nhãn, không dùng matchMedia để xoá bản lưu. */
+var themeBtn=document.getElementById("ln-theme");
+var SYS=matchMedia("(prefers-color-scheme:dark)");
+function metaCS(){return document.querySelector('meta[name="color-scheme"]');}
+function storedCS(){try{return localStorage.getItem("ln-color-scheme");}catch(e){return null;}}
+function sysCS(){return SYS.matches?"dark":"light";}
+function shownCS(){var s=storedCS();return (s==="light"||s==="dark")?s:sysCS();}
+function paintTheme(){
+  if(!themeBtn)return;
+  var cur=shownCS(),other=cur==="dark"?"light":"dark";
+  themeBtn.innerHTML=(cur==="dark"?"\u2600":"\u263e")+
+    '<span class="ln-sr">Chuyển sang nền '+(other==="dark"?"tối":"sáng")+"</span>";
+  themeBtn.title="Đang là nền "+(cur==="dark"?"tối":"sáng")+" — bấm để đổi";
+}
+function applyTheme(){
+  var m=metaCS();
+  if(m)m.content=storedCS()||"light dark";
+  paintTheme();
+}
+if(themeBtn){
+  paintTheme();
+  themeBtn.addEventListener("click",function(){
+    var target=shownCS()==="dark"?"light":"dark";
+    try{if(target===sysCS())localStorage.removeItem("ln-color-scheme");
+        else localStorage.setItem("ln-color-scheme",target);}catch(e){}
+    applyTheme();
+  });
+  if(SYS.addEventListener)SYS.addEventListener("change",paintTheme);
+  addEventListener("storage",function(e){if(e.key==="ln-color-scheme")applyTheme();});
+}
+document.getElementById("ln-helpbtn").addEventListener("click",function(){helpModal.hidden?openHelp():closeModals();});
+[pathModal,helpModal].forEach(function(m){
+  m.addEventListener("click",function(e){if(e.target===m||e.target.closest("[data-closemodal]"))closeModals();});
+});
 document.addEventListener("keydown",function(e){
-  if(e.key==="/"&&document.activeElement!==q){e.preventDefault();q.focus();}
-  if(e.key==="Escape")closeDrawer();
+  var el=document.activeElement,tag=el?el.tagName:"";
+  var typing=tag==="INPUT"||tag==="TEXTAREA"||tag==="SELECT";
+  if(e.key==="Escape"){closeModals();closeDrawer();qres.hidden=true;return;}
+  if(typing)return;
+  if(e.key==="/"){e.preventDefault();q.focus();return;}
+  if(e.key==="?"){helpModal.hidden?openHelp():closeModals();return;}
+  var n=parseInt(e.key,10);
+  if(n>=1&&n<=visViews.length){state.view=visViews[n-1][0];syncTabs();render();}
 });
 
 render();

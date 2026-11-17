@@ -28,5 +28,65 @@
   "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai/ban-do/data.json",
   "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai/ban-do/index.html",
   "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai"
+ },
+ {
+  "id": "lao-dong-2026",
+  "name": "Lao động – việc làm – BHXH",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-13T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-lao-dong/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-lao-dong/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-lao-dong"
+ },
+ {
+  "id": "giao-thong-2026",
+  "name": "Giao thông đường bộ",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-13T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-giao-thong/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-giao-thong/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-giao-thong"
+ },
+ {
+  "id": "hon-nhan-gia-dinh-2026",
+  "name": "Hôn nhân & gia đình",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-13T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-hon-nhan-gia-dinh/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-hon-nhan-gia-dinh/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-hon-nhan-gia-dinh"
+ },
+ {
+  "id": "nha-o-chung-cu-2026",
+  "name": "Nhà ở & chung cư",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-16T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-nha-o/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-nha-o/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-nha-o"
+ },
+ {
+  "id": "dan-su-hop-dong-thua-ke-2026",
+  "name": "Dân sự – Hợp đồng – Thừa kế",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-16T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-dan-su/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-dan-su/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-dan-su"
+ },
+ {
+  "id": "kinh-doanh-giay-phep-2026",
+  "name": "Kinh doanh – Giấy phép",
+  "owned": false,
+  "draft": false,
+  "createdAt": "2026-11-16T00:00:00.000Z",
+  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-kinh-doanh/ban-do/data.json",
+  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-kinh-doanh/ban-do/index.html",
+  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-kinh-doanh"
  }
 ]

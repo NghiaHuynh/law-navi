@@ -44,7 +44,11 @@ ok(Array.isArray(srcs) && srcs.length === 5, 'api/sources đủ 5 nguồn chính
 const badFetch = await fetch(BASE + '/api/sets/xay-dung-2026/fetch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: 'https://evil.example.com/a.pdf' }) });
 ok(badFetch.status === 400, 'fetch chặn host ngoài allowlist');
 const sets0 = await (await fetch(BASE + '/api/sets')).json();
-ok(sets0.length === 3, 'thư viện seed 3 bộ (xây dựng, thuế, đất đai)');
+const SEEDED = ['xay-dung-2026', 'thue-2026', 'dat-dai-2024', 'lao-dong-2026', 'giao-thong-2026',
+  'hon-nhan-gia-dinh-2026', 'nha-o-chung-cu-2026', 'dan-su-hop-dong-thua-ke-2026', 'kinh-doanh-giay-phep-2026'];
+const missing = SEEDED.filter(id => !sets0.some(s => s.id === id));
+ok(sets0.length >= SEEDED.length && !missing.length,
+  'thư viện có đủ ' + SEEDED.length + ' bộ lĩnh vực' + (missing.length ? ' (thiếu: ' + missing + ')' : ' (got ' + sets0.length + ')'));
 const ask = await (await fetch(BASE + '/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q: 'hóa đơn điện tử lập sai thuế suất, khách yêu cầu hủy và lập lại' }) })).json();
 ok(ask.results.length >= 1 && ask.results[0].id === 'thue-2026', 'cross-set ask xếp hạng bộ thuế đầu tiên (got: ' + (ask.results[0] || {}).id + ', ' + (ask.results[0] || {}).pct + '%)');
 
@@ -56,7 +60,10 @@ const LAY = [
   ['bị phạt vì xây nhà không có giấy phép', 'xay-dung-2026', null],
   ['mua đất giấy tay có làm được sổ đỏ không', 'dat-dai-2024', 'nd101'],
   ['xây nhà trên đất nông nghiệp bị phạt bao nhiêu', 'dat-dai-2024', 'nd123'],
-  ['nộp hồ sơ sổ đỏ ở xã hay huyện', 'dat-dai-2024', 'nd151']
+  ['nộp hồ sơ sổ đỏ ở xã hay huyện', 'dat-dai-2024', 'nd151'],
+  ['mở quán cà phê cần giấy tờ gì để bán hàng hợp pháp', 'kinh-doanh-giay-phep-2026', 'nd168'],
+  ['bán rượu bia thì phải xin giấy phép con ở đâu', 'kinh-doanh-giay-phep-2026', 'luat143'],
+  ['công ty không khai chủ sở hữu hưởng lợi có bị phạt không', 'kinh-doanh-giay-phep-2026', 'nd288']
 ];
 for (const [q, wantSet, wantDoc] of LAY) {
   const r = await (await fetch(BASE + '/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q }) })).json();
@@ -167,6 +174,121 @@ await sleep(1800);
 const iframeTabs = await ev(`(function(){var f=document.getElementById('mapframe');var d=f&&f.contentDocument;return d?d.querySelectorAll('#ln-tabs button').length:0;})()`);
 ok(iframeTabs >= 3, 'iframe bản đồ render đủ tab (' + iframeTabs + ')');
 await shot('app-viewer.png');
+
+// 5b) engine UX: onboarding, persona, tour, pathfinder, phím tắt
+await nav(BASE + '/#/view/xay-dung-2026');
+await sleep(1800);
+const inMap = expr => ev(`(function(){var d=document.getElementById('mapframe').contentDocument,w=d.defaultView;return (${expr});})()`);
+const clickMap = sel => inMap(`(function(){var el=d.querySelector('${sel}');if(el)el.click();return !!el;})()`);
+await clickMap('[data-view="map"]');
+await sleep(300);
+ok(await inMap(`!!d.querySelector('.ln-hint')`), 'onboarding: gợi ý lần đầu hiện ở bản đồ');
+await clickMap('[data-hintx]');
+await sleep(200);
+ok(await inMap(`!d.querySelector('.ln-hint')`), 'onboarding: ẩn gợi ý sau khi bấm ×');
+await clickMap('[data-persona="nguoidan"]');
+await sleep(300);
+const tabsND = await inMap(`Array.from(d.querySelectorAll('#ln-tabs button')).map(b=>b.dataset.view).join(',')`);
+ok(!tabsND.split(',').includes('old'), 'persona Người dân: ẩn tab văn bản cũ');
+await clickMap('[data-persona="chuyensau"]');
+await sleep(300);
+const tabsCS = await inMap(`Array.from(d.querySelectorAll('#ln-tabs button')).map(b=>b.dataset.view).join(',')`);
+ok(tabsCS.split(',').includes('old'), 'persona Chuyên sâu: hiện tab văn bản cũ');
+await shot('app-persona.png');
+ok(await clickMap('[data-view="path"]'), 'tour: mở tab Học từng bước');
+await sleep(300);
+ok(await inMap(`!!d.querySelector('[data-tourstart]')`), 'tour: overview có nút bắt đầu');
+const nSteps = await inMap(`d.querySelectorAll('[data-tourgo]').length`);
+ok(nSteps === 8, 'tour: liệt kê đủ 8 bước (got ' + nSteps + ')');
+await shot('app-tour-overview.png');
+await clickMap('[data-tourstart]');
+await sleep(300);
+const t1 = await inMap(`(d.querySelector('.tourcard')||{}).innerText||''`);
+const chip1 = await inMap(`(d.querySelector('.tourhead .chip')||{}).innerText||''`);
+ok(/Luật 135/.test(t1) && /Bước 1 \/ 8/.test(chip1), 'tour: bước 1 hiện Luật 135 + tiến độ 1/8');
+await shot('app-tour-step1.png');
+await clickMap('[data-tournext]');
+await sleep(200);
+ok(/Bước 2 \/ 8/.test(await inMap(`(d.querySelector('.tourhead .chip')||{}).innerText||''`)), 'tour: next sang bước 2');
+await clickMap('[data-tourexit]');
+await sleep(200);
+ok(await inMap(`!!d.querySelector('[data-tourstart]')`), 'tour: thoát về overview');
+await clickMap('#ln-pathbtn');
+await sleep(200);
+ok(await inMap(`!d.getElementById('ln-pathmodal').hidden`), 'pathfinder: mở modal Tìm đường liên hệ');
+await inMap(`(function(){d.getElementById('ln-pfrom').value='luat135';d.getElementById('ln-pto').value='tt32';return 1;})()`);
+await clickMap('#ln-pgo');
+await sleep(200);
+const chain = await inMap(`(d.getElementById('ln-pres')||{}).innerText||''`);
+ok(/Luật 135/.test(chain) && /NĐ 207/.test(chain) && /TT 32/.test(chain), 'pathfinder: chuỗi Luật 135 → NĐ 207 → TT 32');
+await shot('app-pathfinder.png');
+await inMap(`(function(){d.querySelector('#ln-pathmodal [data-closemodal]').click();return 1;})()`);
+await inMap(`(function(){d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'?',bubbles:true}));return 1;})()`);
+await sleep(200);
+ok(await inMap(`!d.getElementById('ln-helpmodal').hidden`), 'phím tắt: ? mở bảng trợ giúp');
+await inMap(`(function(){d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));return 1;})()`);
+await sleep(200);
+ok(await inMap(`d.getElementById('ln-helpmodal').hidden`), 'phím tắt: Esc đóng modal');
+
+// 5c) cross-set hint: câu đất đai hỏi bên trong bộ xây dựng
+await clickMap('[data-view="ask"]');
+await sleep(300);
+await inMap(`(function(){d.getElementById('ln-askq').value='làm sổ đất lần đầu thì phải đến đâu chuẩn bị gì?';d.getElementById('ln-askgo').click();return 1;})()`);
+await sleep(900);
+const routeTxt = await inMap(`(d.getElementById('ln-askroute')||{}).innerText||''`);
+ok(/Đất đai 2024/.test(routeTxt), 'cross-set: câu đất đai hỏi trong bộ xây dựng → gợi ý bộ Đất đai 2024');
+const routeHref = await inMap(`(function(){var a=d.querySelector('#ln-askroute a');return a?a.getAttribute('href'):'';})()`);
+ok(/\/api\/sets\/dat-dai-2024\/map\?q=/.test(routeHref), 'cross-set: link mở đúng bộ kèm câu hỏi');
+await inMap(`(function(){d.getElementById('ln-askroute').scrollIntoView({block:'center'});return 1;})()`);
+await sleep(300);
+await shot('app-crossset-hint.png');
+await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await sleep(500);
+await inMap(`(function(){d.getElementById('ln-askroute').scrollIntoView({block:'center'});return 1;})()`);
+await sleep(300);
+ok(!(await inMap(`(function(){var de=d.documentElement;return de.scrollWidth>de.clientWidth+1;})()`)), 'cross-set: gợi ý không tràn ngang ở 390px');
+await shot('app-crossset-hint-mobile.png');
+await send('Emulation.clearDeviceMetricsOverride');
+await sleep(300);
+
+// 5d) fixcard: khối chưa phủ nổi bật + hướng giải quyết (bộ Đất đai, kịch bản giấy viết tay)
+await ev(`(function(){document.getElementById('mapframe').src='/api/sets/dat-dai-2024/map?q='+encodeURIComponent('Mua đất bằng giấy viết tay, chưa sang tên, giờ muốn làm sổ đỏ');return 1;})()`);
+await sleep(1200);
+ok(await inMap(`!!d.getElementById('ln-fixcard')`), 'fixcard: khối chưa phủ hiện dạng thẻ nổi bật');
+const fxTitle = await inMap(`(d.querySelector('#ln-fixcard .fxttl b')||{}).innerText||''`);
+ok(/Phần chưa phủ \(13%\)/.test(fxTitle), 'fixcard: tiêu đề nêu đúng % chưa phủ (' + fxTitle + ')');
+const nWords = await inMap(`d.querySelectorAll('#ln-fixcard .fxword').length`);
+ok(nWords === 2, 'fixcard: 2 khái niệm chưa phủ kèm giải thích lời thường');
+const fxTxt = await inMap(`(d.getElementById('ln-fixcard')||{}).innerText||''`);
+ok(/giấy viết tay/.test(fxTxt) && /chưa công chứng/.test(fxTxt), 'fixcard: gloss giải thích «viết»/«chưa»');
+ok(!/Phần này cần nguồn khác/.test(fxTxt), 'fixcard: bỏ câu chung chung «cần nguồn khác»');
+const fxSteps = await inMap(`d.querySelectorAll('#ln-fixcard .fxsteps li').length`);
+ok(fxSteps === 4, 'fixcard: 4 bước giải quyết kịch bản giấy viết tay');
+ok(/01\/7\/2014/.test(fxTxt) && /Điều 138/.test(fxTxt), 'fixcard: bước dẫn mốc 01/7/2014 + Điều 138');
+ok(/Ghi chú biên soạn/.test(fxTxt), 'fixcard: ghi chú biên soạn nằm trong khối');
+const jumpHref = await inMap(`(function(){var a=d.querySelector('.missjump');return a?a.getAttribute('href'):'';})()`);
+ok(jumpHref === '#ln-fixcard', 'fixcard: link % nhảy tới khối hướng giải quyết');
+await inMap(`(function(){d.getElementById('ln-fixcard').scrollIntoView({block:'start'});return 1;})()`);
+await sleep(300);
+await shot('app-fixcard.png');
+await inMap(`(function(){d.getElementById('ln-askq').value='kiện hàng xóm vì ranh giới thửa đất';d.getElementById('ln-askgo').click();return 1;})()`);
+await sleep(600);
+const fbSteps = await inMap(`d.querySelectorAll('#ln-fixcard .fxsteps li').length`);
+const fbLinks = await inMap(`d.querySelectorAll('#ln-fixcard .fxlinks a').length`);
+ok(fbSteps === 3 && fbLinks === 5, 'fixcard: fallback 3 bước + 5 nguồn chính thống khi không có kịch bản (' + fbSteps + '/' + fbLinks + ')');
+await inMap(`(function(){d.getElementById('ln-fixcard').scrollIntoView({block:'start'});return 1;})()`);
+await sleep(300);
+await shot('app-fixcard-fallback.png');
+await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await sleep(500);
+await inMap(`(function(){d.getElementById('ln-askq').value='Mua đất bằng giấy viết tay, chưa sang tên, giờ muốn làm sổ đỏ';d.getElementById('ln-askgo').click();return 1;})()`);
+await sleep(600);
+await inMap(`(function(){d.getElementById('ln-fixcard').scrollIntoView({block:'start'});return 1;})()`);
+await sleep(300);
+ok(!(await inMap(`(function(){var de=d.documentElement;return de.scrollWidth>de.clientWidth+1;})()`)), 'fixcard: không tràn ngang ở 390px');
+await shot('app-fixcard-mobile.png');
+await send('Emulation.clearDeviceMetricsOverride');
+await sleep(300);
 
 // 6) deep-link ?q= opens ask pre-run
 await nav(BASE + '/api/sets/thue-2026/map?q=' + encodeURIComponent('hóa đơn điện tử lập sai thuế suất phải xử lý'));

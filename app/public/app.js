@@ -31,45 +31,101 @@ function parseHash() {
 function renderNav(r) {
   const s = SETS.find(x => x.id === r.id);
   $('#nav').innerHTML = (r.screen !== 'library' ? '<a class="btn" href="#/library">← Thư viện</a>' : '') +
-    (s ? '<span>' + esc(s.name) + '</span>' : '');
+    (s ? '<span>' + esc(s.name) + '</span>' : '') + (r.screen !== 'library' ? themeBtnHtml() : '');
 }
+
+/* Cùng bộ key "ln-color-scheme" với engine: một nút đổi nền cho cả app lẫn bản đồ trong iframe. */
+function shownScheme() {
+  const st = localStorage.getItem('ln-color-scheme');
+  if (st === 'light' || st === 'dark') return st;
+  return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function themeBtnHtml() {
+  const cur = shownScheme(), other = cur === 'dark' ? 'sáng' : 'tối';
+  if (document.body.classList.contains('reel-on'))
+    return '<button class="reel-pill" id="btn-theme" title="Đang là nền ' + (cur === 'dark' ? 'tối' : 'sáng') +
+      ' — bấm để đổi">' + (cur === 'dark' ? '\u2600 Nền sáng' : '\u263e Nền tối') + '</button>';
+  return '<button class="btn icon" id="btn-theme" title="Đang là nền ' + (cur === 'dark' ? 'tối' : 'sáng') +
+    ' — bấm để đổi">' + (cur === 'dark' ? '\u2600' : '\u263e') +
+    '<span class="sr">Chuyển sang nền ' + other + '</span></button>';
+}
+function applySchemeMeta() {
+  const st = localStorage.getItem('ln-color-scheme');
+  const m = document.querySelector('meta[name="color-scheme"]');
+  if (m) m.content = st || 'light dark';
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('#btn-theme');
+  if (!b) return;
+  const target = shownScheme() === 'dark' ? 'light' : 'dark';
+  const sys = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  try { if (target === sys) localStorage.removeItem('ln-color-scheme'); else localStorage.setItem('ln-color-scheme', target); } catch (err) {}
+  applySchemeMeta();
+  b.outerHTML = themeBtnHtml();
+});
+addEventListener('storage', e => { if (e.key === 'ln-color-scheme') { applySchemeMeta(); const b = document.getElementById('btn-theme'); if (b) b.outerHTML = themeBtnHtml(); } });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { const b = document.getElementById('btn-theme'); if (b) b.outerHTML = themeBtnHtml(); });
 async function route() {
   const r = parseHash();
+  document.body.classList.toggle('reel-on', r.screen === 'library');
+  if (r.screen !== 'library') Reel.unmount();
   try {
     if (r.screen === 'import') { renderNav(r); return importScreen(); }
     if (r.screen === 'edit' && r.id) { await refresh(); renderNav(r); return editor(r.id); }
     if (r.screen === 'view' && r.id) { await refresh(); renderNav(r); return viewer(r.id, r.q); }
+    renderNav(r);
     return library();
   } catch (e) { toast(e.message, true); $('#main').innerHTML = '<p class="lead">Lỗi: ' + esc(e.message) + '</p>'; }
 }
 window.addEventListener('hashchange', route);
 
 /* ---------- Thư viện ---------- */
-function setCard(s) {
-  return '<article class="card"><h3>' + esc(s.title) + '</h3>' +
-    '<div class="meta">' + esc(s.name) + ' · ' + (s.owned ? 'bộ do app quản lý' : 'liên kết thư mục ngoài') +
-    (s.draft ? ' <span class="badge draft">nháp</span>' : ' <span class="badge ok">đã biên soạn</span>') + '</div>' +
-    '<div class="stats"><b>' + s.docCount + '</b> văn bản (' + s.oldCount + ' hết hiệu lực) · <b>' + s.taskCount + '</b> việc · <b>' + s.problemCount + '</b> kịch bản vấn đề</div>' +
-    '<div class="actions"><a class="btn primary" href="#/view/' + s.id + '">Bản đồ</a>' +
-    '<a class="btn" href="#/edit/' + s.id + '">Biên soạn</a>' +
-    '<a class="btn" href="/api/sets/' + s.id + '/map?download=1">Xuất HTML</a>' +
-    '<button class="btn danger" data-del="' + s.id + '">Gỡ</button></div></article>';
-}
+const LEAF = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 4C10 4 4 10 4 20c10 0 16-6 16-16Z" fill="currentColor" opacity=".9"/><path d="M5 19C10 13 15 8 19 5" stroke="var(--rm-paper)" stroke-width="1.5" stroke-linecap="round"/></svg>';
 async function library() {
   await refresh();
+  const docs = SETS.reduce((a, s) => a + s.docCount, 0);
+  const tasks = SETS.reduce((a, s) => a + s.taskCount, 0);
   $('#main').innerHTML =
-    '<section class="hero"><h1>Bạn đang vướng vấn đề gì?</h1>' +
+    '<div class="reel-bar"><div class="reel-top">' +
+    '<a class="reel-logo" href="#/library">' + LEAF + 'LawNavi</a>' +
+    '<nav class="reel-nav" aria-label="Trong trang"><a href="#reel" class="on">Bộ văn bản</a><a href="#ask">Hỏi vấn đề</a><a href="#sources">Nguồn chính thống</a></nav>' +
+    '<span class="spacer"></span>' + themeBtnHtml() +
+    '<a class="reel-pill solid" href="#/import">+ Nhập bộ</a>' +
+    '</div></div>' +
+    '<section class="reel" id="reel">' +
+    '<div class="reel-badge">' + SETS.length + ' bộ · ' + docs + ' văn bản · ' + tasks + ' việc</div>' +
+    '<h1 class="reel-h1"><span class="l1">Đọc đúng văn bản</span><span class="l2">cho đúng việc của bạn</span></h1>' +
+    '<p class="reel-sub">Mỗi bộ là một luật gốc cùng nghị định, thông tư đi kèm — <br>dựng thành bản đồ quan hệ, lộ trình đọc và kịch bản vấn đề. <br>Kéo băng chuyền để chọn bộ, hoặc kể việc bạn đang vướng.</p>' +
+    '<svg class="reel-doodle d0" viewBox="0 0 40 48" aria-hidden="true"></svg>' +
+    '<div class="reel-note n1">Kéo ngang\nxem từng bộ</div>' +
+    '<svg class="reel-doodle d1" viewBox="0 0 140 180" aria-hidden="true"></svg>' +
+    '<div class="reel-band" aria-label="Băng chuyền bộ văn bản — kéo ngang để xem"></div>' +
+    '<div class="reel-cta-name"></div>' +
+    '<div class="reel-cta"><button type="button">Mở bản đồ</button></div>' +
+    '<div class="reel-note n2">Mở miễn phí</div>' +
+    '<svg class="reel-doodle d2" viewBox="0 0 56 36" aria-hidden="true"></svg>' +
+    '</section>' +
+    '<section class="shelf" aria-label="Công cụ thư viện">' +
+    '<input type="search" id="shelfq" placeholder="Tìm theo tên bộ, số hiệu văn bản…" aria-label="Tìm bộ văn bản">' +
+    '<select id="shelfsort" aria-label="Sắp xếp các bộ"><option value="mac-dinh">Thứ tự biên soạn</option><option value="ten">Tên A → Z</option><option value="docs">Nhiều văn bản nhất</option><option value="old">Nhiều bản hết hiệu lực</option></select>' +
+    '<div class="chips" role="group" aria-label="Lọc trạng thái"><button data-f="all" class="on">Tất cả</button><button data-f="ok">Đã biên soạn</button><button data-f="draft">Nháp</button></div>' +
+    '<span class="n"></span></section>' +
+    '<section class="hero reel-sec" id="ask"><h1>Bạn đang vướng vấn đề gì?</h1>' +
     '<p class="lead">Kể bằng lời thường, như nhắn cho đồng nghiệp — không cần từ chuyên ngành. Hệ thống tự dịch sang khái niệm văn bản, đối chiếu từng bộ trong thư viện và xếp hạng bộ phù hợp nhất.</p>' +
     '<div class="askrow"><textarea id="heroq" rows="2" placeholder="Ví dụ: xây xong nhà không biết ai kiểm tra trước khi ở; hóa đơn tính sai tiền khách bắt sửa lại…"></textarea>' +
     '<button class="btn primary" id="herogo">Tìm bộ phù hợp</button></div><div id="herores"></div></section>' +
-    '<section><div class="sechead"><h2>Thư viện bộ văn bản</h2><a class="btn" href="#/import">+ Nhập thư mục mới</a></div>' +
-    '<div class="cards">' + (SETS.length ? SETS.map(setCard).join('') : '<p class="lead">Chưa có bộ nào. Bấm “Nhập thư mục mới”.</p>') + '</div></section>';
+    '<section class="reel-sec" id="sources"><h2>Nguồn chính thống</h2>' +
+    '<p class="lead">Toàn văn tải từ các cổng thông tin nhà nước đã kiểm chứng. Nhóm theo chủ đề để dễ tra cứu — trích dẫn chính thức vẫn phải đối chiếu bản gốc.</p>' +
+    '<div class="srcgrid" id="srcgrid"></div></section>' +
+    '<footer class="reel-foot">LawNavi — trợ lý đọc văn bản pháp luật. Dữ liệu biên soạn cục bộ trên máy bạn; gỡ bộ khỏi thư viện không xóa file trên đĩa.</footer>';
   $('#herogo').onclick = heroAsk;
   $('#heroq').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) heroAsk(); });
-  $$('[data-del]').forEach(b => b.onclick = async () => {
-    if (!confirm('Gỡ bộ này khỏi thư viện? File trên đĩa vẫn giữ nguyên.')) return;
-    try { await del('/api/sets/' + b.dataset.del); toast('Đã gỡ khỏi thư viện'); library(); } catch (e) { toast(e.message, true); }
-  });
+  Reel.mount($('#reel'));
+  api('/api/sources').then(list => {
+    const g = $('#srcgrid');
+    if (g) g.innerHTML = (list || []).map(x =>
+      '<a href="' + esc(x.url) + '" target="_blank" rel="noopener"><b>' + esc(x.name) + '</b><small>' + esc(x.owner) + ' — ' + esc(x.role) + '</small></a>').join('');
+  }).catch(() => {});
 }
 async function heroAsk() {
   const q = $('#heroq').value.trim();
@@ -380,7 +436,10 @@ async function save() {
 /* ---------- Xem bản đồ ---------- */
 function viewer(id, q) {
   const s = SETS.find(x => x.id === id) || { title: id, name: id };
-  const mapUrl = '/api/sets/' + id + '/map' + (q ? '?q=' + encodeURIComponent(q) : '');
+  // Safari không chuyển prefers-color-scheme vào iframe -> truyền tường minh scheme đang hiển thị.
+  const scheme = localStorage.getItem('ln-color-scheme') ||
+    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const mapUrl = '/api/sets/' + id + '/map?' + (q ? 'q=' + encodeURIComponent(q) + '&' : '') + 'theme=' + scheme;
   $('#main').innerHTML =
     '<div class="vwtop"><b>' + esc(s.title) + '</b><span class="spacer"></span>' +
     '<a class="btn" href="#/edit/' + id + '">Biên soạn</a>' +

@@ -18,7 +18,7 @@ const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8', '.md': 'text/plain; charset=utf-8',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif',
-  '.pdf': 'application/pdf', '.svg': 'image/svg+xml'
+  '.pdf': 'application/pdf', '.svg': 'image/svg+xml', '.woff2': 'font/woff2'
 };
 
 /** @param {import('node:http').IncomingMessage} req @param {import('node:http').ServerResponse} res @param {Object} ctx */
@@ -173,7 +173,16 @@ export const deleteSet = async (req, res, ctx) => {
   const set = setsRepo.get(requireSetId(req.params.id));
   if (!set) throw notFound('Không tìm thấy bộ: ' + req.params.id);
   if (!setsRepo.remove(set.id)) throw notFound('Không tìm thấy bộ: ' + set.id);
+  setsRepo.trash(set);
   return json(res, 200, { ok: true, note: 'Đã gỡ khỏi thư viện. File trên đĩa vẫn giữ nguyên.' });
+};
+
+/** @param {import('node:http').IncomingMessage} req @param {import('node:http').ServerResponse} res @param {Object} ctx */
+export const restoreSet = async (req, res, ctx) => {
+  const id = requireSetId(req.params.id);
+  const rec = setsRepo.restore(id);
+  if (!rec) throw notFound('Không có bộ đã gỡ nào khôi phục được: ' + id);
+  return json(res, 200, { set: setStats(rec) });
 };
 
 /** @param {import('node:http').IncomingMessage} req @param {import('node:http').ServerResponse} res @param {Object} ctx */
@@ -198,11 +207,13 @@ export const ask = async (req, res, ctx) => {
     if (!r) continue;
     results.push({
       id: s.id, name: s.name, title: (d.meta && d.meta.title) || s.name,
-      pct: r.pct, tier: r.tier, covN: r.covN, csN: r.csN, curated: r.curated, says: r.says || [],
+      pct: r.pct, tier: r.tier, covN: r.covN, csN: r.csN, curated: r.curated, exact: r.exact, says: r.says || [],
       plan: r.plan.slice(0, 3).map(x => ({ id: x[0], code: (d.docs[x[0]] || {}).code || x[0], why: x[1] }))
     });
   }
-  results.sort((a, b) => b.pct - a.pct || (b.curated ? 1 : 0) - (a.curated ? 1 : 0) || b.covN - a.covN);
+  // Xếp hạng giữa các bộ: cụm keys được biên soạn riêng cho bộ nào là tín hiệu mạnh nhất, vì pct chỉ so được
+  // trong nội bộ một bộ (mẫu số khái niệm của mỗi bộ khác nhau do lexicon riêng).
+  results.sort((a, b) => b.exact - a.exact || b.pct - a.pct || (b.curated ? 1 : 0) - (a.curated ? 1 : 0) || b.covN - a.covN);
   return json(res, 200, { q, results });
 };
 
@@ -250,6 +261,7 @@ export const dispatch = async (req, res, ctx) => {
     }
     if (sub === '/fetch') { if (method === 'POST') { req.params.id = id; return fetchOfficialSource(req, res, ctx); } }
     if (sub === '/render') { if (method === 'POST') { req.params.id = id; return renderSet(req, res, ctx); } }
+    if (sub === '/restore') { if (method === 'POST') { req.params.id = id; return restoreSet(req, res, ctx); } }
     if (sub === '/map') { if (method === 'GET') { req.params.id = id; return getSetMap(req, res, ctx); } }
     if (sub === '' && method === 'DELETE') { req.params.id = id; return deleteSet(req, res, ctx); }
   }
