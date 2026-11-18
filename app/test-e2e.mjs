@@ -50,7 +50,8 @@ const missing = SEEDED.filter(id => !sets0.some(s => s.id === id));
 ok(sets0.length >= SEEDED.length && !missing.length,
   'thư viện có đủ ' + SEEDED.length + ' bộ lĩnh vực' + (missing.length ? ' (thiếu: ' + missing + ')' : ' (got ' + sets0.length + ')'));
 const ask = await (await fetch(BASE + '/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q: 'hóa đơn điện tử lập sai thuế suất, khách yêu cầu hủy và lập lại' }) })).json();
-ok(ask.results.length >= 1 && ask.results[0].id === 'thue-2026', 'cross-set ask xếp hạng bộ thuế đầu tiên (got: ' + (ask.results[0] || {}).id + ', ' + (ask.results[0] || {}).pct + '%)');
+const askTop = (ask.results || [])[0] || {};
+ok(askTop.id === 'thue-2026', 'cross-set ask xếp hạng bộ thuế đầu tiên (got: ' + askTop.id + ', ' + askTop.pct + '%)');
 
 // layperson natural language (no jargon)
 const LAY = [
@@ -67,8 +68,8 @@ const LAY = [
 ];
 for (const [q, wantSet, wantDoc] of LAY) {
   const r = await (await fetch(BASE + '/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q }) })).json();
-  const top = r.results[0] || {};
-  ok(top.id === wantSet && (!wantDoc || top.plan.some(p => p.id === wantDoc)) && (top.says || []).length > 0,
+  const top = (r.results || [])[0] || {};
+  ok(top.id === wantSet && (!wantDoc || (top.plan || []).some(p => p.id === wantDoc)) && (top.says || []).length > 0,
     'ngôn ngữ thường "' + q.slice(0, 30) + '…" → ' + top.id + ' ' + top.pct + '% (hiểu: ' + (top.says || []).join('; ') + ')');
 }
 
@@ -76,12 +77,22 @@ for (const [q, wantSet, wantDoc] of LAY) {
 const imp = await (await fetch(BASE + '/api/sets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'Fixture chất lượng', sourceDir: fixture }) })).json();
 ok(imp.set && imp.set.docCount >= 4, 'import đường dẫn trích xuất >=4 văn bản (got ' + (imp.set || {}).docCount + ')');
 ok(/CẦN AGENT ĐỌC THÊM/.test(imp.log || ''), 'extract cảnh báo file nhị nghĩa');
-const fid = imp.set.id;
+const fid = imp.set ? imp.set.id : null;
 
-// chrome
+// 7) source file preview guard: traversal must fail (API-only, chạy cả khi không có Chrome)
+const guard = await fetch(BASE + '/api/file?set=' + (fid || 'xay-dung-2026') + '&rel=../../etc/passwd');
+ok(guard.status === 400, 'chặn path traversal ở /api/file');
+
+// chrome + UI suite: lỗi giữa chừng ghi FAIL rồi chạy tiếp, không chết suite
+let chrome = null, ws = null, uiSet = null;
+const errors = [];
 const CPORT = 9600 + Math.floor(Math.random() * 40);
-const chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + CPORT, '--user-data-dir=/tmp/lawnavi-e2e-' + CPORT,
+if (!fs.existsSync(CHROME)) {
+  ok(false, 'chrome hiện diện để chạy UI test (' + CHROME + ') — bỏ qua phần UI');
+} else try {
+chrome = spawn(CHROME, ['--headless=new', '--remote-debugging-port=' + CPORT, '--user-data-dir=/tmp/lawnavi-e2e-' + CPORT,
   '--no-first-run', '--disable-sync', '--window-size=1500,1000', '--hide-scrollbars', 'about:blank'], { stdio: 'ignore' });
+chrome.on('error', () => {});
 async function waitCdp() {
   for (let i = 0; i < 60; i++) { try { const r = await fetch('http://127.0.0.1:' + CPORT + '/json/version'); if (r.ok) return; } catch {} await new Promise(r => setTimeout(r, 300)); }
   throw new Error('chrome cdp down');
@@ -90,8 +101,8 @@ await waitCdp();
 const targets = await (await fetch('http://127.0.0.1:' + CPORT + '/json/list')).json();
 for (const t of targets.filter(t => t.type === 'page')) await fetch('http://127.0.0.1:' + CPORT + '/json/close/' + t.id);
 const target = await (await fetch('http://127.0.0.1:' + CPORT + '/json/new?about:blank', { method: 'PUT' })).json();
-const ws = new WebSocket(target.webSocketDebuggerUrl);
-let nextId = 1; const pending = new Map(); const errors = [];
+ws = new WebSocket(target.webSocketDebuggerUrl);
+let nextId = 1; const pending = new Map();
 await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
 ws.onmessage = ev => {
   const m = JSON.parse(ev.data);
@@ -146,7 +157,7 @@ const impLog = await ev(`(document.querySelector('#impres pre.log')||{}).innerTe
 ok(/văn bản/.test(impLog), 'UI import hiện log trích xuất');
 await shot('app-import.png');
 const sets1 = await (await fetch(BASE + '/api/sets')).json();
-const uiSet = sets1.find(s => s.name === 'Fixture UI');
+uiSet = sets1.find(s => s.name === 'Fixture UI');
 ok(!!uiSet, 'bộ Fixture UI đã vào thư viện');
 
 // 4) editor: load, edit sum, save
@@ -159,9 +170,10 @@ await sleep(300);
 await ev(`(function(){var t=document.querySelector('[data-f="sum"]');if(t){t.value='Tóm tắt đã biên soạn lại trong app.';t.dispatchEvent(new Event('input',{bubbles:true}));}})()`);
 await ev(`document.getElementById('edsave').click()`);
 await sleep(700);
-const saved = await (await fetch(BASE + '/api/sets/' + fid + '/data')).json();
-ok(Object.values(saved.docs).some(d => d.sum === 'Tóm tắt đã biên soạn lại trong app.'), 'lưu biên soạn ghi xuống data.json');
-ok((await (await fetch(BASE + '/api/sets')).json()).find(s => s.id === fid).draft === false, 'bộ hết nhãn nháp sau lưu');
+const saved = fid ? await (await fetch(BASE + '/api/sets/' + fid + '/data')).json() : {};
+ok(saved.docs && Object.values(saved.docs).some(d => d.sum === 'Tóm tắt đã biên soạn lại trong app.'), 'lưu biên soạn ghi xuống data.json');
+const afterSave = fid ? (await (await fetch(BASE + '/api/sets')).json()).find(s => s.id === fid) : null;
+ok(!!afterSave && afterSave.draft === false, 'bộ hết nhãn nháp sau lưu');
 await shot('app-editor.png');
 await ev(`document.querySelector('[data-panel="files"]').click()`);
 const srcTxt = await ev(`document.getElementById('edmain').innerText`);
@@ -297,9 +309,9 @@ const pct = await ev(`(document.querySelector('.pct')||{}).textContent||''`);
 ok(/%/.test(pct), 'deep-link ?q= chạy sẵn phân tích (' + pct + ')');
 await shot('app-deeplink.png');
 
-// 7) source file preview guard: traversal must fail
-const guard = await fetch(BASE + '/api/file?set=' + fid + '&rel=../../etc/passwd');
-ok(guard.status === 400, 'chặn path traversal ở /api/file');
+} catch (e) {
+  ok(false, 'UI suite chạy trọn vẹn (' + e.message + ')');
+}
 
 console.log('CONSOLE ERRORS:', errors.length ? errors : 'none');
 if (errors.length) failures.push('console errors');
@@ -313,6 +325,6 @@ for (const s of [fid, uiSet && uiSet.id]) {
 }
 fs.rmSync(fixture, { recursive: true, force: true });
 
-ws.close(); chrome.kill(); server.kill();
+if (ws) ws.close(); if (chrome) chrome.kill(); server.kill();
 console.log(failures.length ? '\nE2E FAIL: ' + failures.join(' | ') : '\nE2E ALL PASS');
 process.exit(failures.length ? 2 : 0);
