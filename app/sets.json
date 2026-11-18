@@ -5,9 +5,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-10T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/data/xay-dung-2026.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/law-navi/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/law-navi"
+  "dataPath": "data/xay-dung-2026.json",
+  "outPath": "index.html",
+  "sourceDir": "."
  },
  {
   "id": "thue-2026",
@@ -15,9 +15,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-10T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-thue/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-thue/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-thue"
+  "dataPath": "../luat-thue/ban-do/data.json",
+  "outPath": "../luat-thue/ban-do/index.html",
+  "sourceDir": "../luat-thue"
  },
  {
   "id": "dat-dai-2024",
@@ -25,9 +25,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-11T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-dat-dai"
+  "dataPath": "../luat-dat-dai/ban-do/data.json",
+  "outPath": "../luat-dat-dai/ban-do/index.html",
+  "sourceDir": "../luat-dat-dai"
  },
  {
   "id": "lao-dong-2026",
@@ -35,9 +35,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-13T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-lao-dong/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-lao-dong/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-lao-dong"
+  "dataPath": "../luat-lao-dong/ban-do/data.json",
+  "outPath": "../luat-lao-dong/ban-do/index.html",
+  "sourceDir": "../luat-lao-dong"
  },
  {
   "id": "giao-thong-2026",
@@ -45,9 +45,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-13T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-giao-thong/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-giao-thong/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-giao-thong"
+  "dataPath": "../luat-giao-thong/ban-do/data.json",
+  "outPath": "../luat-giao-thong/ban-do/index.html",
+  "sourceDir": "../luat-giao-thong"
  },
  {
   "id": "hon-nhan-gia-dinh-2026",
@@ -55,9 +55,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-13T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-hon-nhan-gia-dinh/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-hon-nhan-gia-dinh/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-hon-nhan-gia-dinh"
+  "dataPath": "../luat-hon-nhan-gia-dinh/ban-do/data.json",
+  "outPath": "../luat-hon-nhan-gia-dinh/ban-do/index.html",
+  "sourceDir": "../luat-hon-nhan-gia-dinh"
  },
  {
   "id": "nha-o-chung-cu-2026",
@@ -65,9 +65,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-16T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-nha-o/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-nha-o/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-nha-o"
+  "dataPath": "../luat-nha-o/ban-do/data.json",
+  "outPath": "../luat-nha-o/ban-do/index.html",
+  "sourceDir": "../luat-nha-o"
  },
  {
   "id": "dan-su-hop-dong-thua-ke-2026",
@@ -75,9 +75,9 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-16T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-dan-su/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-dan-su/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-dan-su"
+  "dataPath": "../luat-dan-su/ban-do/data.json",
+  "outPath": "../luat-dan-su/ban-do/index.html",
+  "sourceDir": "../luat-dan-su"
  },
  {
   "id": "kinh-doanh-giay-phep-2026",
@@ -85,8 +85,8 @@
   "owned": false,
   "draft": false,
   "createdAt": "2026-11-16T00:00:00.000Z",
-  "dataPath": "/Users/nghiahuynh/Documents/antigravity/luat-kinh-doanh/ban-do/data.json",
-  "outPath": "/Users/nghiahuynh/Documents/antigravity/luat-kinh-doanh/ban-do/index.html",
-  "sourceDir": "/Users/nghiahuynh/Documents/antigravity/luat-kinh-doanh"
+  "dataPath": "../luat-kinh-doanh/ban-do/data.json",
+  "outPath": "../luat-kinh-doanh/ban-do/index.html",
+  "sourceDir": "../luat-kinh-doanh"
  }
 ]

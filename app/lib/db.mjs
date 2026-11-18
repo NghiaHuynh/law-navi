@@ -4,22 +4,40 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { norm } from './analyze.mjs';
 import { MAX_WALK_FILES } from './types.mjs';
 
-const APP_DIR = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const APP_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const ROOT_DIR = path.resolve(APP_DIR, '..');
 const SETS_FILE = process.env.LAW_NAV_SETS_FILE || path.join(APP_DIR, 'sets.json');
 const SETS_DIR = process.env.LAW_NAV_SETS_DIR || path.join(APP_DIR, 'sets');
 const TRASH_FILE = path.join(path.dirname(SETS_FILE), '.sets-trash.json');
 
-const loadTrash = () => { try { return JSON.parse(fs.readFileSync(TRASH_FILE, 'utf8')); } catch { return []; } };
+// Registry paths are stored relative to the repo root (forward slashes) so a clone
+// works on any machine; in memory they are always absolute.
+const PATH_KEYS = ['dataPath', 'outPath', 'sourceDir'];
+const toAbs = (s) => { for (const k of PATH_KEYS) if (s[k] && !path.isAbsolute(s[k])) s[k] = path.resolve(ROOT_DIR, s[k]); return s; };
+const toRel = (s) => {
+  const o = { ...s };
+  for (const k of PATH_KEYS) {
+    if (!o[k]) continue;
+    const r = path.relative(ROOT_DIR, path.resolve(ROOT_DIR, o[k]));
+    if (!r) o[k] = '.';
+    else if (!path.isAbsolute(r)) o[k] = r.split(path.sep).join('/');
+  }
+  return o;
+};
+
+const loadTrash = () => { try { return JSON.parse(fs.readFileSync(TRASH_FILE, 'utf8')).map(toAbs); } catch { return []; } };
+const saveTrash = (t) => atomicWrite(TRASH_FILE, JSON.stringify(t.map(toRel), null, 1) + '\n');
 
 export { SETS_FILE, SETS_DIR };
 
 /** @returns {Array} */
-export const loadSets = () => JSON.parse(fs.readFileSync(SETS_FILE, 'utf8'));
+export const loadSets = () => JSON.parse(fs.readFileSync(SETS_FILE, 'utf8')).map(toAbs);
 /** @param {Array} s */
-export const saveSets = (s) => fs.writeFileSync(SETS_FILE, JSON.stringify(s, null, 1) + '\n');
+export const saveSets = (s) => fs.writeFileSync(SETS_FILE, JSON.stringify(s.map(toRel), null, 1) + '\n');
 
 /** @param {string} id @returns {SetStats|undefined} */
 export const findSet = (id) => loadSets().find(s => s.id === id);
@@ -94,14 +112,14 @@ export const setsRepo = {
   /** @param {string} id @returns {boolean} */
   remove: (id) => { const sets = loadSets(); const before = sets.length; const next = sets.filter(x => x.id !== id); if (before === next.length) return false; saveSets(next); return true; },
   /** Gỡ chỉ bỏ đăng ký — giữ bản ghi vào thùng rác để Hoàn tác khôi phục đúng id, không trích xuất lại. @param {SetRecord} record */
-  trash: (record) => { const t = loadTrash().filter(x => x.id !== record.id); t.push(record); atomicWrite(TRASH_FILE, JSON.stringify(t.slice(-20), null, 1) + '\n'); },
+  trash: (record) => { const t = loadTrash().filter(x => x.id !== record.id); t.push(record); saveTrash(t.slice(-20)); },
   /** @param {string} id @returns {SetRecord|null} */
   restore: (id) => {
     const t = loadTrash();
     const rec = t.find(x => x.id === id);
     if (!rec || loadSets().some(s => s.id === id) || !fs.existsSync(rec.dataPath)) return null;
     const sets = loadSets(); sets.push(rec); saveSets(sets);
-    atomicWrite(TRASH_FILE, JSON.stringify(t.filter(x => x.id !== id), null, 1) + '\n');
+    saveTrash(t.filter(x => x.id !== id));
     return rec;
   }
 };
